@@ -1,0 +1,3 @@
+[submodule "vendor/c-api"]
+	path = vendor/c-api
+	url = https://github.com/JackKnox/Ember
