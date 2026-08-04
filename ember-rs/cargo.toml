@@ -1,8 +1,10 @@
 [package]
-name = "safe"
-version = "0.1.0"
+name = "ember-rs"
+version = "0.6.0"
 edition = "2024"
 license = "MIT"
 
 [dependencies]
 ffi = { path = "../ffi" }
+bitflags = "2.13.1"
+log = "0.4.33"
