@@ -1,37 +1,9 @@
 use ffi;
 
-use std::alloc::{GlobalAlloc, Layout};
 use std::fmt;
 
 pub struct Allocator {
     pub sys: ffi::em_allocator,
-}
-
-unsafe impl GlobalAlloc for Allocator {
-    unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
-        let alloc = self.sys.alloc.expect("Invalid ember allocator used");
-
-        unsafe {
-            alloc(
-                &self.sys as *const _ as *mut _,
-                layout.size() as u64,
-                layout.align() as u64,
-            ) as *mut std::os::raw::c_void as *mut u8
-        }
-    }
-
-    unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout) {
-        let free = self.sys.free.expect("Invalid ember allocator used");
-
-        unsafe {
-            free(
-                &self.sys as *const _ as *mut _,
-                ptr as *mut std::os::raw::c_void,
-                layout.size() as u64,
-                layout.align() as u64,
-            );
-        }
-    }
 }
 
 #[derive(Debug)]
@@ -79,6 +51,12 @@ impl fmt::Display for Error {
                 "An unknown error has occurred; either the application has provided invalid input, or an implementation failure has occurred"
             ),
         }
+    }
+}
+
+impl From<u32> for Error {
+    fn from(_: u32) -> Self {
+        todo!()
     }
 }
 

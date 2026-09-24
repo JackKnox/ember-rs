@@ -8,48 +8,15 @@ pub const EMBER_FORMAT_FLAG_SRGB: u32 = 4;
 pub const EMBER_FORMAT_FLAG_DEPTH: u32 = 8;
 pub const EMBER_FORMAT_FLAG_STENCIL: u32 = 16;
 pub const EMGPU_FORMAT_UNDEFINED: u32 = 0;
+pub const EMWIN_FORMAT_UNDEFINED: u32 = 0;
 pub type u8_ = ::std::os::raw::c_uchar;
 pub type u32_ = ::std::os::raw::c_uint;
 pub type u64_ = ::std::os::raw::c_ulong;
 pub type i32_ = ::std::os::raw::c_int;
+pub type i64_ = ::std::os::raw::c_long;
 pub type f32_ = f32;
 pub type f64_ = f64;
 pub type b8 = bool;
-#[doc = "< Critical error causing immediate failure"]
-pub const log_level_LOG_LEVEL_FATAL: log_level = 0;
-#[doc = "< Error condition"]
-pub const log_level_LOG_LEVEL_ERROR: log_level = 1;
-#[doc = "< Warning condition"]
-pub const log_level_LOG_LEVEL_WARN: log_level = 2;
-#[doc = "< Informational message"]
-pub const log_level_LOG_LEVEL_INFO: log_level = 3;
-#[doc = "< Detailed trace/debugging information"]
-pub const log_level_LOG_LEVEL_TRACE: log_level = 4;
-#[doc = "< Very verbose developer-only logs (See EMBER_DEV)"]
-pub const log_level_LOG_LEVEL_DEV: log_level = 5;
-#[doc = " @brief Defines severity levels for logging output.\n\n Higher numeric values generally represent lower severity / more verbose logs."]
-pub type log_level = ::std::os::raw::c_uint;
-#[doc = " @brief Function pointer type for custom log output handlers.\n\n @param level Severity level of the log message.\n @param subsystem Subsystem/category string (e.g. \"GPU\", \"Audio\").\n @param formatted_message Final formatted log message string."]
-pub type PFN_log_output = ::std::option::Option<
-    unsafe extern "C" fn(
-        level: log_level,
-        subsystem: *const ::std::os::raw::c_char,
-        formatted_message: *const ::std::os::raw::c_char,
-    ),
->;
-unsafe extern "C" {
-    #[doc = " @brief Logs a formatted message to the default console logger.\n\n This function supports printf-style formatting.\n\n @param level Severity level of the log.\n @param subsystem Subsystem/category string (used for filtering/identification).\n @param message Format string (printf-style).\n @param ... Optional format arguments."]
-    pub fn emlog_console(
-        level: log_level,
-        subsystem: *const ::std::os::raw::c_char,
-        message: *const ::std::os::raw::c_char,
-        ...
-    );
-}
-unsafe extern "C" {
-    #[doc = " @brief Registers a custom log callback.\n\n Replaces or overrides the default logging output mechanism.\n\n @param func Function pointer receiving log messages."]
-    pub fn emlog_callback(func: PFN_log_output);
-}
 #[doc = " @brief Function pointer type for custom memory allocation.\n\n @param allocator Allocator instance.\n @param size Number of bytes to allocate.\n @param alignment Required memory alignment.\n\n @return Pointer to allocated memory, or NULL on failure."]
 pub type PFN_allocate_mem = ::std::option::Option<
     unsafe extern "C" fn(
@@ -67,7 +34,7 @@ pub type PFN_free_mem = ::std::option::Option<
         alignment: u64_,
     ),
 >;
-#[doc = " @brief Function pointer type for custom memory reallocation.\n\n @param allocator Allocator instance.\n @param block Pointer to memory block to reallocate.\n @param old_size Previous allocation size.\n @param new_size New allocation size.\n @param alignment Alignment used during allocation."]
+#[doc = " @brief Function pointer type for custom memory reallocation.\n\n @param allocator Allocator instance.\n @param block Pointer to memory block to reallocate.\n @param old_size Old allocation size.\n @param new_size New allocation size.\n @param alignment Alignment used during allocation."]
 pub type PFN_reallocate_mem = ::std::option::Option<
     unsafe extern "C" fn(
         allocator: *mut em_allocator,
@@ -212,13 +179,11 @@ pub const emgpu_device_mode_EMBER_DEVICE_MODE_COMPUTE: emgpu_device_mode = 2;
 pub const emgpu_device_mode_EMBER_DEVICE_MODE_RAYTRACE: emgpu_device_mode = 4;
 #[doc = "< Data transfer operations"]
 pub const emgpu_device_mode_EMBER_DEVICE_MODE_TRANSFER: emgpu_device_mode = 8;
-#[doc = "< Presentation to a platform surface"]
-pub const emgpu_device_mode_EMBER_DEVICE_MODE_PRESENT: emgpu_device_mode = 16;
 #[doc = "< Impl-agnostic validation layer"]
-pub const emgpu_device_mode_EMBER_DEVICE_MODE_VALIDATION: emgpu_device_mode = 32;
+pub const emgpu_device_mode_EMBER_DEVICE_MODE_VALIDATION: emgpu_device_mode = 16;
 #[doc = "< Preserve power as much as possible"]
-pub const emgpu_device_mode_EMBER_DEVICE_MODE_POWER_SAVING: emgpu_device_mode = 64;
-pub const emgpu_device_mode_EMBER_DEVICE_MODE_SAMPLER_ANISOTROPY: emgpu_device_mode = 128;
+pub const emgpu_device_mode_EMBER_DEVICE_MODE_POWER_SAVING: emgpu_device_mode = 32;
+pub const emgpu_device_mode_EMBER_DEVICE_MODE_SAMPLER_ANISOTROPY: emgpu_device_mode = 64;
 #[doc = " @brief Operating modes supported by the renderer.\n\n Modes may be combined as bit flags."]
 pub type emgpu_device_mode = ::std::os::raw::c_uint;
 #[doc = "< Ops-agnostic operations"]
@@ -241,8 +206,10 @@ pub const emgpu_buffer_usage_EMBER_BUFFER_USAGE_UNIFORM: emgpu_buffer_usage = 4;
 pub const emgpu_buffer_usage_EMBER_BUFFER_USAGE_STORAGE: emgpu_buffer_usage = 8;
 #[doc = "< Transfer from this buffer"]
 pub const emgpu_buffer_usage_EMBER_BUFFER_USAGE_TRANSFER_SRC: emgpu_buffer_usage = 16;
+#[doc = "< Transfer to this buffer"]
+pub const emgpu_buffer_usage_EMBER_BUFFER_USAGE_TRANSFER_DST: emgpu_buffer_usage = 32;
 #[doc = "< CPU-coherent buffer"]
-pub const emgpu_buffer_usage_EMBER_BUFFER_USAGE_CPU_VISIBLE: emgpu_buffer_usage = 32;
+pub const emgpu_buffer_usage_EMBER_BUFFER_USAGE_CPU_VISIBLE: emgpu_buffer_usage = 64;
 #[doc = " @brief Intended usage of a GPU buffer.\n\n Usage flags may be combined as bit flags."]
 pub type emgpu_buffer_usage = ::std::os::raw::c_uint;
 #[doc = "< Storage image"]
@@ -251,7 +218,9 @@ pub const emgpu_texture_usage_EMBER_TEXTURE_USAGE_STORAGE: emgpu_texture_usage =
 pub const emgpu_texture_usage_EMBER_TEXTURE_USAGE_SAMPLED: emgpu_texture_usage = 2;
 #[doc = "< Transfer from this texture"]
 pub const emgpu_texture_usage_EMBER_TEXTURE_USAGE_TRANSFER_SRC: emgpu_texture_usage = 4;
-#[doc = "< Used as a texture in a renderpass"]
+#[doc = "< Transfer to this texture"]
+pub const emgpu_texture_usage_EMBER_TEXTURE_USAGE_TRANSFER_DST: emgpu_texture_usage = 8;
+#[doc = "< Used as a output texture in a renderpass"]
 pub const emgpu_texture_usage_EMBER_TEXTURE_USAGE_ATTACHMENT_DST: emgpu_texture_usage = 16;
 #[doc = " @brief Intended usage of a texture.\n\n Usage flags may be combined as bit flags."]
 pub type emgpu_texture_usage = ::std::os::raw::c_uint;
@@ -291,6 +260,8 @@ pub const emgpu_store_op_EMBER_STORE_OP_STORE: emgpu_store_op = 0;
 pub const emgpu_store_op_EMBER_STORE_OP_DONT_CARE: emgpu_store_op = 1;
 #[doc = " @brief Attachment store operation at the end of a render pass.\n\n Determines whether attachment contents are preserved\n after the render pass completes."]
 pub type emgpu_store_op = ::std::os::raw::c_uint;
+#[doc = "< Resource has no synchronization rules."]
+pub const emgpu_access_flags_EMBER_ACCESS_NONE: emgpu_access_flags = 0;
 #[doc = "< Written by a shader"]
 pub const emgpu_access_flags_EMBER_ACCESS_SHADER_WRITE: emgpu_access_flags = 1;
 #[doc = "< Resource read by a shader"]
@@ -341,6 +312,24 @@ pub const emgpu_blend_factor_EMBER_BLEND_FACTOR_CONSTANT_ALPHA: emgpu_blend_fact
 pub const emgpu_blend_factor_EMBER_BLEND_FACTOR_ONE_MINUS_CONSTANT_ALPHA: emgpu_blend_factor = 13;
 #[doc = " @brief Blend factors used in colour blending operations.\n\n These values define how source and destination colours are scaled\n before applying the blend operation."]
 pub type emgpu_blend_factor = ::std::os::raw::c_uint;
+#[doc = "< The comparison always fails."]
+pub const emgpu_compare_op_EMBER_COMPARE_OP_NEVER: emgpu_compare_op = 0;
+#[doc = "< Passes if the first value is less than the second value."]
+pub const emgpu_compare_op_EMBER_COMPARE_OP_LESS: emgpu_compare_op = 1;
+#[doc = "< Passes if the first value is equal to the second value."]
+pub const emgpu_compare_op_EMBER_COMPARE_OP_EQUAL: emgpu_compare_op = 2;
+#[doc = "< Passes if the first value is less than or equal to the second value."]
+pub const emgpu_compare_op_EMBER_COMPARE_OP_LESS_OR_EQUAL: emgpu_compare_op = 3;
+#[doc = "< Passes if the first value is greater than the second value."]
+pub const emgpu_compare_op_EMBER_COMPARE_OP_GREATER: emgpu_compare_op = 4;
+#[doc = "< Passes if the first value is not equal to the second value."]
+pub const emgpu_compare_op_EMBER_COMPARE_OP_NOT_EQUAL: emgpu_compare_op = 5;
+#[doc = "< Passes if the first value is greater than or equal to the second value."]
+pub const emgpu_compare_op_EMBER_COMPARE_OP_GREATER_OR_EQUAL: emgpu_compare_op = 6;
+#[doc = "< The comparison always passes."]
+pub const emgpu_compare_op_EMBER_COMPARE_OP_ALWAYS: emgpu_compare_op = 7;
+#[doc = " @brief Comparison operation used for depth and stencil tests."]
+pub type emgpu_compare_op = ::std::os::raw::c_uint;
 #[doc = "< src + dst"]
 pub const emgpu_blend_op_EMBER_BLEND_OP_ADD: emgpu_blend_op = 0;
 #[doc = "< src - dst"]
@@ -353,6 +342,24 @@ pub const emgpu_blend_op_EMBER_BLEND_OP_MIN: emgpu_blend_op = 3;
 pub const emgpu_blend_op_EMBER_BLEND_OP_MAX: emgpu_blend_op = 4;
 #[doc = " @brief Blend operations used to combine source and destination values."]
 pub type emgpu_blend_op = ::std::os::raw::c_uint;
+#[doc = "< Keep the existing stencil value unchanged."]
+pub const emgpu_stencil_op_EMBER_STENCIL_OP_KEEP: emgpu_stencil_op = 0;
+#[doc = "< Replace the stencil value with zero."]
+pub const emgpu_stencil_op_EMBER_STENCIL_OP_ZERO: emgpu_stencil_op = 1;
+#[doc = "< Replace the stencil value with the reference value."]
+pub const emgpu_stencil_op_EMBER_STENCIL_OP_REPLACE: emgpu_stencil_op = 2;
+#[doc = "< Increment the stencil value, clamping at the maximum value."]
+pub const emgpu_stencil_op_EMBER_STENCIL_OP_INCREMENT_AND_CLAMP: emgpu_stencil_op = 3;
+#[doc = "< Decrement the stencil value, clamping at zero."]
+pub const emgpu_stencil_op_EMBER_STENCIL_OP_DECREMENT_AND_CLAMP: emgpu_stencil_op = 4;
+#[doc = "< Invert all bits of the stencil value."]
+pub const emgpu_stencil_op_EMBER_STENCIL_OP_INVERT: emgpu_stencil_op = 5;
+#[doc = "< Increment the stencil value, wrapping at the maximum value."]
+pub const emgpu_stencil_op_EMBER_STENCIL_OP_INCREMENT_AND_WRAP: emgpu_stencil_op = 6;
+#[doc = "< Decrement the stencil value, wrapping at zero."]
+pub const emgpu_stencil_op_EMBER_STENCIL_OP_DECREMENT_AND_WRAP: emgpu_stencil_op = 7;
+#[doc = " @brief Operation performed on a stencil value."]
+pub type emgpu_stencil_op = ::std::os::raw::c_uint;
 #[doc = "< Nearest-neighbor filtering"]
 pub const emgpu_filter_type_EMBER_FILTER_TYPE_NEAREST: emgpu_filter_type = 0;
 #[doc = "< Linear interpolation filtering"]
@@ -381,6 +388,45 @@ pub const emgpu_address_mode_EMBER_ADDRESS_MODE_CLAMP_TO_BORDER: emgpu_address_m
 pub const emgpu_address_mode_EMBER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE: emgpu_address_mode = 4;
 #[doc = " @brief Texture address (wrap) modes."]
 pub type emgpu_address_mode = ::std::os::raw::c_uint;
+#[doc = " @brief Describes the operations and masks used by a stencil test."]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct emgpu_stencil_op_state {
+    #[doc = " @brief Operation performed when the stencil test fails."]
+    pub fail_op: emgpu_stencil_op,
+    #[doc = " @brief Operation performed when both the stencil and depth tests pass."]
+    pub pass_op: emgpu_stencil_op,
+    #[doc = " @brief Operation performed when the stencil test passes but the depth test fails."]
+    pub depth_fail_op: emgpu_stencil_op,
+    #[doc = " @brief Comparison operation used by the stencil test."]
+    pub compare_op: emgpu_compare_op,
+    #[doc = " @brief Bit mask applied to stencil values before comparison."]
+    pub compare_mask: u32_,
+    #[doc = " @brief Bit mask controlling which stencil bits may be written."]
+    pub write_mask: u32_,
+    #[doc = " @brief Reference value used by the stencil comparison."]
+    pub reference: u32_,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of emgpu_stencil_op_state"][::std::mem::size_of::<emgpu_stencil_op_state>() - 28usize];
+    ["Alignment of emgpu_stencil_op_state"]
+        [::std::mem::align_of::<emgpu_stencil_op_state>() - 4usize];
+    ["Offset of field: emgpu_stencil_op_state::fail_op"]
+        [::std::mem::offset_of!(emgpu_stencil_op_state, fail_op) - 0usize];
+    ["Offset of field: emgpu_stencil_op_state::pass_op"]
+        [::std::mem::offset_of!(emgpu_stencil_op_state, pass_op) - 4usize];
+    ["Offset of field: emgpu_stencil_op_state::depth_fail_op"]
+        [::std::mem::offset_of!(emgpu_stencil_op_state, depth_fail_op) - 8usize];
+    ["Offset of field: emgpu_stencil_op_state::compare_op"]
+        [::std::mem::offset_of!(emgpu_stencil_op_state, compare_op) - 12usize];
+    ["Offset of field: emgpu_stencil_op_state::compare_mask"]
+        [::std::mem::offset_of!(emgpu_stencil_op_state, compare_mask) - 16usize];
+    ["Offset of field: emgpu_stencil_op_state::write_mask"]
+        [::std::mem::offset_of!(emgpu_stencil_op_state, write_mask) - 20usize];
+    ["Offset of field: emgpu_stencil_op_state::reference"]
+        [::std::mem::offset_of!(emgpu_stencil_op_state, reference) - 24usize];
+};
 #[doc = " @brief Describes a single descriptor binding."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -462,9 +508,26 @@ const _: () = {
     ["Offset of field: emgpu_device_capabilities::vendor_signiture"]
         [::std::mem::offset_of!(emgpu_device_capabilities, vendor_signiture) - 48usize];
 };
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub union emgpu_extension_user_data {
+    pub bytes: [u8_; 16usize],
+    pub _align: u64_,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of emgpu_extension_user_data"]
+        [::std::mem::size_of::<emgpu_extension_user_data>() - 16usize];
+    ["Alignment of emgpu_extension_user_data"]
+        [::std::mem::align_of::<emgpu_extension_user_data>() - 8usize];
+    ["Offset of field: emgpu_extension_user_data::bytes"]
+        [::std::mem::offset_of!(emgpu_extension_user_data, bytes) - 0usize];
+    ["Offset of field: emgpu_extension_user_data::_align"]
+        [::std::mem::offset_of!(emgpu_extension_user_data, _align) - 0usize];
+};
 #[doc = " @brief Describes an extension to the rendering device.\n\n Extensions are optional or required modules provided by the GPU backend\n and requested by the user during device creation.\n\n They may:\n - Enable additional GPU features\n - Provide platform-specific integration (WSI)\n - Expose extra API entry points\n\n Most extensions may require additional platform or library dependencies\n to be linked. See offical documentation for more."]
 #[repr(C)]
-#[derive(Debug, Copy, Clone)]
+#[derive(Copy, Clone)]
 pub struct emgpu_extension_desc {
     #[doc = " @brief Internal name of the extension.\n\n This name is defined by the system and is used for matching\n against backend-supported extensions.\n\n @note This value is not intended to be used for application logic."]
     pub name: *const ::std::os::raw::c_char,
@@ -473,7 +536,7 @@ pub struct emgpu_extension_desc {
     #[doc = " @brief Indicates whether the extension is optional.\n\n If set to FALSE, device initialization will fail if the extension\n is not supported by the selected backend."]
     pub optional: b8,
     #[doc = " @brief Type-erased create info for the extension."]
-    pub user_data: [u8_; 16usize],
+    pub user_data: emgpu_extension_user_data,
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
@@ -486,8 +549,10 @@ const _: () = {
     ["Offset of field: emgpu_extension_desc::optional"]
         [::std::mem::offset_of!(emgpu_extension_desc, optional) - 12usize];
     ["Offset of field: emgpu_extension_desc::user_data"]
-        [::std::mem::offset_of!(emgpu_extension_desc, user_data) - 13usize];
+        [::std::mem::offset_of!(emgpu_extension_desc, user_data) - 16usize];
 };
+#[doc = " @brief Representes a thread of execution on the GPU."]
+pub type emgpu_queue = u64_;
 #[doc = " @brief Configuration used for creating a GPU device."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -557,15 +622,15 @@ const _: () = {
         [::std::mem::offset_of!(emgpu_device, frame_allocator) - 16usize];
 };
 unsafe extern "C" {
-    #[doc = " @brief Initializes a GPU device instance.\n\n This function sets up the device and assigns the appropriate backend\n implementation based on the provided configuration.\n\n @param config Device configuration parameters.\n @param out_device Output device instance.\n @return Ember result code; returns `EMBER_RESULT_OK` if succeeds."]
+    #[doc = " @brief Initializes a GPU device instance.\n\n This function sets up the device and assigns the appropriate backend\n implementation based on the provided configuration.\n\n @param allocator Allocater used to allocate device memory.\n @param config Device configuration parameters.\n @param out_device Output device instance.\n @return Ember result code; returns `EMBER_RESULT_OK` if succeeds."]
     pub fn emgpu_device_init(
-        config: *const emgpu_device_config,
         allocator: *mut em_allocator,
+        config: *const emgpu_device_config,
         out_device: *mut emgpu_device,
     ) -> em_result;
 }
 unsafe extern "C" {
-    #[doc = " @brief Shuts down a GPU device.\n\n Releases all resources associated with the device and performs\n backend-specific cleanup.\n\n @param device Pointer to the device instance."]
+    #[doc = " @brief Shuts down a GPU device.\n\n Releases all resources associated with the device and performs\n backend-specific cleanup.\n\n @param allocator Allocator originally used allocate device memory.\n @param device Pointer to the device instance."]
     pub fn emgpu_device_shutdown(allocator: *mut em_allocator, device: *mut emgpu_device);
 }
 unsafe extern "C" {
@@ -574,6 +639,73 @@ unsafe extern "C" {
         device: *mut emgpu_device,
         out_capabilities: *mut emgpu_device_capabilities,
     ) -> em_result;
+}
+unsafe extern "C" {
+    #[doc = " @brief Opens a queue of execution on the GPU.\n\n @param device Pointer to the device instance.\n @param out_queue Output queue."]
+    pub fn emgpu_device_open_queue(
+        device: *mut emgpu_device,
+        out_queue: *mut emgpu_queue,
+    ) -> em_result;
+}
+unsafe extern "C" {
+    #[doc = " @brief Blocks thread until all command buffers submitted are finished.\n\n @param device Pointer to the device instance.\n @param queue Queue identifier."]
+    pub fn emgpu_queue_wait_idle(device: *mut emgpu_device, queue: emgpu_queue) -> em_result;
+}
+pub type emgpu_local_resource = u32_;
+#[doc = " @brief Framebuffer handle local to a single GPU command buffer.\n\n This identifier representes any texture that is correctly controlled to\n allow rendering directly to it through a renderpass. This allows that is only guaranteed\n to be valid during the lifetime of the relevent command buffer. This ensures\n syncronization and lifetime guarantees."]
+pub type emgpu_local_framebuffer = u32_;
+#[doc = " @brief Represents a linear sequance of commands relevent to the current GPU device.\n\n An emgpu_commandbuffer acts as a transient container for all GPU commands\n required to render or dispatch work for a single frame. It provides\n a linear command recording model and manages frame-local resources."]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct emgpu_command_buffer {
+    #[doc = " @brief Indicates whether the frame was successfully initialized."]
+    pub initialized: b8,
+    #[doc = " @brief Index used for allocating frame-local resources."]
+    pub current_resource_idx: u32_,
+    #[doc = " @brief A reference to the allocator used to manage command buffer memory."]
+    pub allocator: *mut em_allocator,
+    #[doc = " @brief Linear command buffer storing recorded GPU commands.\n\n Commands are appended during frame recording and later consumed\n during submission."]
+    pub commands_buf: *mut ::std::os::raw::c_void,
+    pub buffer_size: u64_,
+    pub buffer_capacity: u64_,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of emgpu_command_buffer"][::std::mem::size_of::<emgpu_command_buffer>() - 40usize];
+    ["Alignment of emgpu_command_buffer"][::std::mem::align_of::<emgpu_command_buffer>() - 8usize];
+    ["Offset of field: emgpu_command_buffer::initialized"]
+        [::std::mem::offset_of!(emgpu_command_buffer, initialized) - 0usize];
+    ["Offset of field: emgpu_command_buffer::current_resource_idx"]
+        [::std::mem::offset_of!(emgpu_command_buffer, current_resource_idx) - 4usize];
+    ["Offset of field: emgpu_command_buffer::allocator"]
+        [::std::mem::offset_of!(emgpu_command_buffer, allocator) - 8usize];
+    ["Offset of field: emgpu_command_buffer::commands_buf"]
+        [::std::mem::offset_of!(emgpu_command_buffer, commands_buf) - 16usize];
+    ["Offset of field: emgpu_command_buffer::buffer_size"]
+        [::std::mem::offset_of!(emgpu_command_buffer, buffer_size) - 24usize];
+    ["Offset of field: emgpu_command_buffer::buffer_capacity"]
+        [::std::mem::offset_of!(emgpu_command_buffer, buffer_capacity) - 32usize];
+};
+unsafe extern "C" {
+    #[doc = " @brief Submits a command buffer for GPU execution.\n\n @param device Pointer to the device instance.\n @param queue Queue of execution to submit command buffer.\n @param command_buf Pointer to command buffer.\n @return Ember result code; returns `EMBER_RESULT_OK` if succeds."]
+    pub fn emgpu_device_submit(
+        device: *mut emgpu_device,
+        queue: emgpu_queue,
+        command_buf: *const emgpu_command_buffer,
+    ) -> em_result;
+}
+unsafe extern "C" {
+    #[doc = " @brief Initializes a GPU command buffer for recording.\n\n @param device Pointer to the device instance.\n @param out_command_buffer Pointer to the buffer to initialize.\n\n @return Ember result code; `EMBER_RESULT_OK` if succeds."]
+    pub fn emgpu_command_buffer_create(
+        device: *mut emgpu_device,
+        out_command_buffer: *mut emgpu_command_buffer,
+    ) -> em_result;
+}
+unsafe extern "C" {
+    #[doc = " @brief Reserves a slot for a local resource.\n\n @param commands_buf Pointer to the command buffer.\n @return Empty resource handle."]
+    pub fn emgpu_cmd_empty_resource(
+        command_buf: *mut emgpu_command_buffer,
+    ) -> emgpu_local_framebuffer;
 }
 #[doc = " @brief Configuration for a render buffer.\n\n Defines a GPU buffer such as a vertex, index,\n uniform, or storage buffer."]
 #[repr(C)]
@@ -625,27 +757,6 @@ unsafe extern "C" {
         allocator: *mut em_allocator,
         config: *const emgpu_buffer_config,
         out_buffer: *mut emgpu_buffer,
-    ) -> em_result;
-}
-unsafe extern "C" {
-    #[doc = " @brief Copies data between two managed buffers.\n\n @param device Pointer to the device instance.\n @param src_buffer Source buffer to copy from.\n @param dst_buffer Destination buffer to copy into.\n @param src_offset Offset (in bytes) into the source buffer.\n @param dst_offset Offset (in bytes) into the destination buffer.\n @param region Number of bytes to copy.\n @return Ember result code; returns `EMBER_RESULT_OK` on success.\n\n @note Performance may vary if buffers must copy over CPU-GPU boundaries."]
-    pub fn emgpu_buffer_copy(
-        device: *mut emgpu_device,
-        src_buffer: *mut emgpu_buffer,
-        dst_buffer: *mut emgpu_buffer,
-        src_offset: u64_,
-        dst_offset: u64_,
-        region: u64_,
-    ) -> em_result;
-}
-unsafe extern "C" {
-    #[doc = " @brief Uploads data from host memory into a GPU buffer.\n\n @param device GPU device handle used to perform the upload.\n @param buffer Destination GPU buffer to receive the data.\n @param data Pointer to the source memory containing the data.\n @param offset Byte offset into the destination buffer where data will be written.\n @param region Number of bytes to upload from the source data.\n @return Ember result code; returns `EMBER_RESULT_OK` on success."]
-    pub fn emgpu_buffer_upload(
-        device: *mut emgpu_device,
-        buffer: *mut emgpu_buffer,
-        data: *const ::std::os::raw::c_void,
-        offset: u64_,
-        region: u64_,
     ) -> em_result;
 }
 unsafe extern "C" {
@@ -725,22 +836,19 @@ unsafe extern "C" {
     ) -> em_result;
 }
 unsafe extern "C" {
-    #[doc = " @brief Uploads data to a texture.\n\n @param device Pointer to the device instance.\n @param texture Target texture.\n @param data Pointer to source data.\n @param start_offset Starting texel position.\n @param region Size of the region to update.\n @return Ember result code; returns `EMBER_RESULT_OK` if succeeds."]
-    pub fn emgpu_texture_upload(
-        device: *mut emgpu_device,
-        texture: *mut emgpu_texture,
-        data: *const ::std::os::raw::c_void,
-        start_offset: uvec2,
-        region: uvec2,
-    ) -> em_result;
-}
-unsafe extern "C" {
-    #[doc = " @brief Destroys a texture.\n\n @param device Pointer to the device instance.\n @param allocator Allocator used to manage device memory.\n @param texture Texture to destroy."]
+    #[doc = " @brief Destroys a textures.\n\n @param device Pointer to the device instance.\n @param allocator Allocator used to manage device memory.\n @param texture Texture to destroy."]
     pub fn emgpu_texture_destroy(
         device: *mut emgpu_device,
         allocator: *mut em_allocator,
         texture: *mut emgpu_texture,
     );
+}
+unsafe extern "C" {
+    #[doc = " @brief Imports a persistent texture into the command buffer.\n\n Registers an external GPU texture for use within the command buffer\n and returns a valid framebuffer handle to it.\n\n @param command_buf Pointer to the command buffer.\n @param texture Pointer to the GPU texture to import.\n\n @return A local framebuffer handle."]
+    pub fn emgpu_cmd_import_texture(
+        command_buf: *mut emgpu_command_buffer,
+        texture: *mut emgpu_texture,
+    ) -> emgpu_local_framebuffer;
 }
 #[doc = " @brief Describes a single descriptor update for a pipeline.\n\n This structure is used to update a single descriptor bindings within a\n emgpu_pipeline. The descriptor type determines which union member\n is expected to be valid.\n\n @note Only one union member must be set, according to the value of @ref type."]
 #[repr(C)]
@@ -785,6 +893,52 @@ const _: () = {
         [::std::mem::offset_of!(emgpu_update_descriptors, binding) - 8usize];
     ["Offset of field: emgpu_update_descriptors::type_"]
         [::std::mem::offset_of!(emgpu_update_descriptors, type_) - 12usize];
+};
+#[doc = " @brief Descriptor for importing a resource into a live pipeline execution\n for use in descriptors."]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct emgpu_resource_import {
+    #[doc = " @brief Bind index to import the resource."]
+    pub dst_binding: u32_,
+    #[doc = " @brief Local reference to the resource."]
+    pub resource: emgpu_local_resource,
+    #[doc = " @brief Allowed access for the revelent pipeline."]
+    pub access_flags: emgpu_access_flags,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of emgpu_resource_import"][::std::mem::size_of::<emgpu_resource_import>() - 12usize];
+    ["Alignment of emgpu_resource_import"]
+        [::std::mem::align_of::<emgpu_resource_import>() - 4usize];
+    ["Offset of field: emgpu_resource_import::dst_binding"]
+        [::std::mem::offset_of!(emgpu_resource_import, dst_binding) - 0usize];
+    ["Offset of field: emgpu_resource_import::resource"]
+        [::std::mem::offset_of!(emgpu_resource_import, resource) - 4usize];
+    ["Offset of field: emgpu_resource_import::access_flags"]
+        [::std::mem::offset_of!(emgpu_resource_import, access_flags) - 8usize];
+};
+#[doc = " @brief Descriptor for relasing resource control from a live pipeline\n execution to another consumer."]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct emgpu_resource_export {
+    #[doc = " @brief Bind index of the resource to export."]
+    pub src_binding: u32_,
+    #[doc = " @brief Destination local resource handle."]
+    pub resource: emgpu_local_resource,
+    #[doc = " @brief Authorized access of other consumers for this resource."]
+    pub access_flags: emgpu_access_flags,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of emgpu_resource_export"][::std::mem::size_of::<emgpu_resource_export>() - 12usize];
+    ["Alignment of emgpu_resource_export"]
+        [::std::mem::align_of::<emgpu_resource_export>() - 4usize];
+    ["Offset of field: emgpu_resource_export::src_binding"]
+        [::std::mem::offset_of!(emgpu_resource_export, src_binding) - 0usize];
+    ["Offset of field: emgpu_resource_export::resource"]
+        [::std::mem::offset_of!(emgpu_resource_export, resource) - 4usize];
+    ["Offset of field: emgpu_resource_export::access_flags"]
+        [::std::mem::offset_of!(emgpu_resource_export, access_flags) - 8usize];
 };
 #[doc = " @brief Backend-agnostic GPU pipeline handle.\n\n Defines a GPU pipeline internally coupled with\n descriptors or a vertex/index buffer."]
 #[repr(C)]
@@ -849,6 +1003,38 @@ const _: () = {
     ["Offset of field: emgpu_compute_pipeline_config::descriptors"]
         [::std::mem::offset_of!(emgpu_compute_pipeline_config, descriptors) - 40usize];
 };
+#[doc = " @brief Configuration for a compute pass.\n\n A compute pass is a live context of a compute pipeline\n within a command buffer. It requires info about local group size,\n resource imports and resource exports."]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct emgpu_computepass_config {
+    #[doc = " @brief Connected pipeline to computepass."]
+    pub pipeline: *const emgpu_pipeline,
+    #[doc = " @brief Resources to export from pipeline."]
+    pub export_resources: *const emgpu_resource_export,
+    #[doc = " @brief Number of export resources."]
+    pub export_resource_count: u32_,
+    #[doc = " @brief Resources to import into pipeline."]
+    pub import_resources: *const emgpu_resource_import,
+    #[doc = " @brief Number of import resources."]
+    pub import_resource_count: u32_,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of emgpu_computepass_config"]
+        [::std::mem::size_of::<emgpu_computepass_config>() - 40usize];
+    ["Alignment of emgpu_computepass_config"]
+        [::std::mem::align_of::<emgpu_computepass_config>() - 8usize];
+    ["Offset of field: emgpu_computepass_config::pipeline"]
+        [::std::mem::offset_of!(emgpu_computepass_config, pipeline) - 0usize];
+    ["Offset of field: emgpu_computepass_config::export_resources"]
+        [::std::mem::offset_of!(emgpu_computepass_config, export_resources) - 8usize];
+    ["Offset of field: emgpu_computepass_config::export_resource_count"]
+        [::std::mem::offset_of!(emgpu_computepass_config, export_resource_count) - 16usize];
+    ["Offset of field: emgpu_computepass_config::import_resources"]
+        [::std::mem::offset_of!(emgpu_computepass_config, import_resources) - 24usize];
+    ["Offset of field: emgpu_computepass_config::import_resource_count"]
+        [::std::mem::offset_of!(emgpu_computepass_config, import_resource_count) - 32usize];
+};
 unsafe extern "C" {
     #[doc = " @brief Creates a compute pipeline.\n\n @param device Pointer to the device instance.\n @param allocator Allocator used to manage device memory.\n @param config Pipeline configuration.\n @param out_compute_pipeline Output pipeline.\n @return Ember result code; returns `EMBER_RESULT_OK` if succeeds."]
     pub fn emgpu_compute_pipeline_create(
@@ -858,180 +1044,165 @@ unsafe extern "C" {
         out_compute_pipeline: *mut emgpu_pipeline,
     ) -> em_result;
 }
-#[doc = " @brief Backend-agnostic GPU surface objects.\n\n Represents a backend-agnsotic object that connectes a platform surface."]
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct emgpu_surface {
-    #[doc = " @brief Backend-specific internal data."]
-    pub internal_data: *mut ::std::os::raw::c_void,
-    #[doc = " @brief Format of the pixel(s) attachted to the platform surface."]
-    pub pixel_format: emgpu_format,
-    #[doc = " @brief Number of owned images used for concurrent rendering."]
-    pub image_count: u32_,
-}
-#[allow(clippy::unnecessary_operation, clippy::identity_op)]
-const _: () = {
-    ["Size of emgpu_surface"][::std::mem::size_of::<emgpu_surface>() - 16usize];
-    ["Alignment of emgpu_surface"][::std::mem::align_of::<emgpu_surface>() - 8usize];
-    ["Offset of field: emgpu_surface::internal_data"]
-        [::std::mem::offset_of!(emgpu_surface, internal_data) - 0usize];
-    ["Offset of field: emgpu_surface::pixel_format"]
-        [::std::mem::offset_of!(emgpu_surface, pixel_format) - 8usize];
-    ["Offset of field: emgpu_surface::image_count"]
-        [::std::mem::offset_of!(emgpu_surface, image_count) - 12usize];
-};
 unsafe extern "C" {
-    #[doc = " @brief Resizes a rendering size to given size.\n\n @param device Pointer to the device instance.\n @param surface Surface to resize.\n @param new_size New size of surface. 0, 0 = minimized.\n @note Surface is not guarenteeed to be resized immediately; In\n       some backends surface is resized next frame it's rendered to."]
-    pub fn emgpu_surface_resize(
-        device: *mut emgpu_device,
-        surface: *mut emgpu_surface,
-        new_size: uvec2,
-    ) -> em_result;
-}
-unsafe extern "C" {
-    #[doc = " @brief Destroys a rendering surface.\n\n @param device Pointer to the device instance.\n @param allocator Allocator used to manage device memory.\n @param surface Surface to destroy."]
-    pub fn emgpu_surface_destroy(
-        device: *mut emgpu_device,
-        allocator: *mut em_allocator,
-        surface: *mut emgpu_surface,
+    #[doc = " @brief Begins a compute pass.\n\n @param command_buf Pointer to the command buffer.\n @param config Compute pass configuration."]
+    pub fn emgpu_cmd_begin_computepass(
+        command_buf: *mut emgpu_command_buffer,
+        config: *const emgpu_computepass_config,
     );
+}
+unsafe extern "C" {
+    #[doc = " @brief Dispatches a compute workload.\n\n @param command_buf Pointer to the command buffer.\n @param group_size Number of compute workgroups in XYZ dimensions."]
+    pub fn emgpu_cmd_dispatch(command_buf: *mut emgpu_command_buffer, group_size: uvec3);
+}
+unsafe extern "C" {
+    #[doc = " @brief Ends current compute pass.\n\n @param command_buf Pointer to the command buffer."]
+    pub fn emgpu_cmd_end_computepass(command_buf: *mut emgpu_command_buffer);
 }
 #[doc = " @brief Describes a single render pass attachment."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
-pub struct emgpu_attachment_config {
-    #[doc = " @brief Logical attachment type (colour, depth, stencil, etc.)."]
-    pub type_: emgpu_attachment_type,
-    #[doc = " @brief Library-defined pixel format. Must be compatible with the attachment type."]
-    pub format: emgpu_format,
+pub struct emgpu_colour_attachment {
+    #[doc = " @brief Local framebuffer to render all output to."]
+    pub framebuffer: emgpu_local_framebuffer,
     #[doc = " @brief Load operation for colour or depth aspect."]
     pub load_op: emgpu_load_op,
     #[doc = " @brief Store operation for colour or depth aspect."]
     pub store_op: emgpu_store_op,
-    #[doc = " @brief Load operation for stencil aspect.\n Only relevant for stencil or depth-stencil attachments."]
-    pub stencil_load_op: emgpu_load_op,
-    #[doc = " @brief Store operation for stencil aspect.\n Only relevant for stencil or depth-stencil attachments."]
-    pub stencil_store_op: emgpu_store_op,
+    #[doc = " @brief Default colour of the output framebuffer."]
+    pub clear_colour: u32_,
     #[doc = " @brief Compatible with rendering to a surface object."]
     pub presentable: b8,
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of emgpu_attachment_config"][::std::mem::size_of::<emgpu_attachment_config>() - 28usize];
-    ["Alignment of emgpu_attachment_config"]
-        [::std::mem::align_of::<emgpu_attachment_config>() - 4usize];
-    ["Offset of field: emgpu_attachment_config::type_"]
-        [::std::mem::offset_of!(emgpu_attachment_config, type_) - 0usize];
-    ["Offset of field: emgpu_attachment_config::format"]
-        [::std::mem::offset_of!(emgpu_attachment_config, format) - 4usize];
-    ["Offset of field: emgpu_attachment_config::load_op"]
-        [::std::mem::offset_of!(emgpu_attachment_config, load_op) - 8usize];
-    ["Offset of field: emgpu_attachment_config::store_op"]
-        [::std::mem::offset_of!(emgpu_attachment_config, store_op) - 12usize];
-    ["Offset of field: emgpu_attachment_config::stencil_load_op"]
-        [::std::mem::offset_of!(emgpu_attachment_config, stencil_load_op) - 16usize];
-    ["Offset of field: emgpu_attachment_config::stencil_store_op"]
-        [::std::mem::offset_of!(emgpu_attachment_config, stencil_store_op) - 20usize];
-    ["Offset of field: emgpu_attachment_config::presentable"]
-        [::std::mem::offset_of!(emgpu_attachment_config, presentable) - 24usize];
+    ["Size of emgpu_colour_attachment"][::std::mem::size_of::<emgpu_colour_attachment>() - 20usize];
+    ["Alignment of emgpu_colour_attachment"]
+        [::std::mem::align_of::<emgpu_colour_attachment>() - 4usize];
+    ["Offset of field: emgpu_colour_attachment::framebuffer"]
+        [::std::mem::offset_of!(emgpu_colour_attachment, framebuffer) - 0usize];
+    ["Offset of field: emgpu_colour_attachment::load_op"]
+        [::std::mem::offset_of!(emgpu_colour_attachment, load_op) - 4usize];
+    ["Offset of field: emgpu_colour_attachment::store_op"]
+        [::std::mem::offset_of!(emgpu_colour_attachment, store_op) - 8usize];
+    ["Offset of field: emgpu_colour_attachment::clear_colour"]
+        [::std::mem::offset_of!(emgpu_colour_attachment, clear_colour) - 12usize];
+    ["Offset of field: emgpu_colour_attachment::presentable"]
+        [::std::mem::offset_of!(emgpu_colour_attachment, presentable) - 16usize];
 };
-unsafe extern "C" {
-    #[doc = " @brief Returns a basic attachment guaranteed to work on a surface."]
-    pub fn emgpu_attachment_from_surface(surface: *mut emgpu_surface) -> emgpu_attachment_config;
-}
-#[doc = " @brief Configuration for a renderpass.\n\n Contains attachments, image layout transitions\n and attachment images."]
+#[doc = " @brief Configuration for a command buffer renderpass.\n\n A renderpass is a context of execution within a command buffer\n specifically for using the rendering capabilities of the GPU and uses\n the Graphics Pipeline."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct emgpu_renderpass_config {
-    #[doc = " @brief Refrence to extra configuration structure specific to API type."]
-    pub api_next: *mut ::std::os::raw::c_void,
-    #[doc = " @brief Number of attachments attached to the renderpass."]
-    pub attachment_count: u32_,
-    #[doc = " @brief Attachments created within the renderpass."]
-    pub attachments: *mut emgpu_attachment_config,
+    #[doc = " @brief Origin of the renderarea rect, local to the current framebuffer."]
+    pub render_origin: uvec2,
+    #[doc = " @brief Size of the renderarea rect, local to the current framebuffe."]
+    pub render_size: uvec2,
+    #[doc = " @brief Attachments for colour data output."]
+    pub colour_attachments: *const emgpu_colour_attachment,
+    #[doc = " @brief Number of colour attachments."]
+    pub colour_attachment_count: u32_,
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of emgpu_renderpass_config"][::std::mem::size_of::<emgpu_renderpass_config>() - 24usize];
+    ["Size of emgpu_renderpass_config"][::std::mem::size_of::<emgpu_renderpass_config>() - 32usize];
     ["Alignment of emgpu_renderpass_config"]
         [::std::mem::align_of::<emgpu_renderpass_config>() - 8usize];
-    ["Offset of field: emgpu_renderpass_config::api_next"]
-        [::std::mem::offset_of!(emgpu_renderpass_config, api_next) - 0usize];
-    ["Offset of field: emgpu_renderpass_config::attachment_count"]
-        [::std::mem::offset_of!(emgpu_renderpass_config, attachment_count) - 8usize];
-    ["Offset of field: emgpu_renderpass_config::attachments"]
-        [::std::mem::offset_of!(emgpu_renderpass_config, attachments) - 16usize];
-};
-#[doc = " @brief Represents a render pass used by the renderer backend.\n\n A render pass is the blueprint for rendering operations. It can either\n represent a window-backed surface (such as a swapchain image) or an\n offscreen render pass."]
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct emgpu_renderpass {
-    #[doc = " @brief Backend-specific internal data."]
-    pub internal_data: *mut ::std::os::raw::c_void,
-    #[doc = " @brief Number of attachments attached to the renderpass."]
-    pub attachment_count: u32_,
-}
-#[allow(clippy::unnecessary_operation, clippy::identity_op)]
-const _: () = {
-    ["Size of emgpu_renderpass"][::std::mem::size_of::<emgpu_renderpass>() - 16usize];
-    ["Alignment of emgpu_renderpass"][::std::mem::align_of::<emgpu_renderpass>() - 8usize];
-    ["Offset of field: emgpu_renderpass::internal_data"]
-        [::std::mem::offset_of!(emgpu_renderpass, internal_data) - 0usize];
-    ["Offset of field: emgpu_renderpass::attachment_count"]
-        [::std::mem::offset_of!(emgpu_renderpass, attachment_count) - 8usize];
+    ["Offset of field: emgpu_renderpass_config::render_origin"]
+        [::std::mem::offset_of!(emgpu_renderpass_config, render_origin) - 0usize];
+    ["Offset of field: emgpu_renderpass_config::render_size"]
+        [::std::mem::offset_of!(emgpu_renderpass_config, render_size) - 8usize];
+    ["Offset of field: emgpu_renderpass_config::colour_attachments"]
+        [::std::mem::offset_of!(emgpu_renderpass_config, colour_attachments) - 16usize];
+    ["Offset of field: emgpu_renderpass_config::colour_attachment_count"]
+        [::std::mem::offset_of!(emgpu_renderpass_config, colour_attachment_count) - 24usize];
 };
 unsafe extern "C" {
-    #[doc = " @brief Creates a render pass.\n\n @param device Pointer to the device instance.\n @param allocator Allocator used to manage device memory.\n @param config Render pass configuration.\n @param out_renderpass Output render pass.\n @return Ember result code; returns `EMBER_RESULT_OK` if succeeds."]
-    pub fn emgpu_renderpass_create(
-        device: *mut emgpu_device,
-        allocator: *mut em_allocator,
+    #[doc = " @brief Begins a renderpass within the given command buffer.\n\n @param command_buf Pointer to the command buffer.\n @param config Renderpass configuration."]
+    pub fn emgpu_cmd_begin_renderpass(
+        command_buf: *mut emgpu_command_buffer,
         config: *const emgpu_renderpass_config,
-        out_renderpass: *mut emgpu_renderpass,
-    ) -> em_result;
-}
-unsafe extern "C" {
-    #[doc = " @brief Destroys a render pass.\n\n @param device Pointer to the device instance.\n @param allocator Allocator used to manage device memory.\n @param renderpass Pass to destroy."]
-    pub fn emgpu_renderpass_destroy(
-        device: *mut emgpu_device,
-        allocator: *mut em_allocator,
-        renderpass: *mut emgpu_renderpass,
     );
 }
-#[doc = " @brief Configuration for rasterization blending state.\n\n Defines how polygons are blended together with existing ones."]
+unsafe extern "C" {
+    #[doc = " @brief Ends the currently active render pass.\n\n @param command_buf Pointer to the command buffer."]
+    pub fn emgpu_cmd_end_renderpass(command_buf: *mut emgpu_command_buffer);
+}
+unsafe extern "C" {
+    #[doc = " @brief Sets the viewport for subsequent rendering commands.\n\n Defines the viewport used by following graphics commands.\n This does not affect compute operations.\n\n @param command_buf Pointer to the command buffer.\n @param origin Top-left coordinate of the viewport.\n @param size Dimensions of the viewport.\n @param min_depth Mask for minimum depth displayed by the GPU.\n @param max_depth Mask for maximum depth displayed by the GPU."]
+    pub fn emgpu_cmd_set_viewport(
+        command_buf: *mut emgpu_command_buffer,
+        origin: uvec2,
+        size: uvec2,
+        min_depth: f32_,
+        max_depth: f32_,
+    );
+}
+unsafe extern "C" {
+    #[doc = " @brief Set the scissor for subsequent rendering commands.\n\n Defines the scissor used by following graphics commands.\n This does not affect compute operations.\n\n @param command_buf Pointer to the command buffer.\n @param origin Top-left coordinate of the scissor.\n @param size Dimensions of the scissor."]
+    pub fn emgpu_cmd_set_scissor(
+        command_buf: *mut emgpu_command_buffer,
+        origin: uvec2,
+        size: uvec2,
+    );
+}
+#[doc = " @brief Configures depth and stencil testing for a raster pipeline."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
-pub struct emgpu_raster_blend_config {
-    #[doc = " @brief Source blend factors for colour components."]
-    pub src_colour: emgpu_blend_factor,
-    #[doc = " @brief Destination blend factors for colour components."]
-    pub dst_colour: emgpu_blend_factor,
-    #[doc = " @brief Blend operation applied to colour components."]
-    pub colour_op: emgpu_blend_op,
-    #[doc = " @brief Source blend factors for alpha component."]
-    pub src_alpha: emgpu_blend_factor,
-    #[doc = " @brief Destination blend factors for alpha component."]
-    pub dst_alpha: emgpu_blend_factor,
-    #[doc = " @brief Blend operation applied to alpha component."]
-    pub alpha_op: emgpu_blend_op,
+pub struct emgpu_raster_depth_stencil_config {
+    #[doc = " @brief Depth format compatible with the pipeline."]
+    pub depth_format: emgpu_format,
+    #[doc = " @brief Stencil format compatible with the pipeline."]
+    pub stencil_format: emgpu_format,
+    #[doc = " @brief Enables depth testing."]
+    pub depth_test_enable: b8,
+    #[doc = " @brief Enables writing depth values to the depth attachment."]
+    pub depth_write_enabled: b8,
+    #[doc = " @brief Comparison operation used for depth testing."]
+    pub compare_op: emgpu_compare_op,
+    #[doc = " @brief Enables depth bounds testing."]
+    pub depth_bounds_test_enable: b8,
+    #[doc = " @brief Enables stencil testing."]
+    pub stencil_test_enable: b8,
+    #[doc = " @brief Stencil operation applied to front-facing fragments."]
+    pub front_stencil: emgpu_stencil_op,
+    #[doc = " @brief Stencil operation applied to back-facing fragments."]
+    pub back_stencil: emgpu_stencil_op,
+    #[doc = " @brief Minimum depth value used for depth bounds testing."]
+    pub min_depth_bounds: f32_,
+    #[doc = " @brief Maximum depth value used for depth bounds testing."]
+    pub max_depth_bounds: f32_,
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of emgpu_raster_blend_config"]
-        [::std::mem::size_of::<emgpu_raster_blend_config>() - 24usize];
-    ["Alignment of emgpu_raster_blend_config"]
-        [::std::mem::align_of::<emgpu_raster_blend_config>() - 4usize];
-    ["Offset of field: emgpu_raster_blend_config::src_colour"]
-        [::std::mem::offset_of!(emgpu_raster_blend_config, src_colour) - 0usize];
-    ["Offset of field: emgpu_raster_blend_config::dst_colour"]
-        [::std::mem::offset_of!(emgpu_raster_blend_config, dst_colour) - 4usize];
-    ["Offset of field: emgpu_raster_blend_config::colour_op"]
-        [::std::mem::offset_of!(emgpu_raster_blend_config, colour_op) - 8usize];
-    ["Offset of field: emgpu_raster_blend_config::src_alpha"]
-        [::std::mem::offset_of!(emgpu_raster_blend_config, src_alpha) - 12usize];
-    ["Offset of field: emgpu_raster_blend_config::dst_alpha"]
-        [::std::mem::offset_of!(emgpu_raster_blend_config, dst_alpha) - 16usize];
-    ["Offset of field: emgpu_raster_blend_config::alpha_op"]
-        [::std::mem::offset_of!(emgpu_raster_blend_config, alpha_op) - 20usize];
+    ["Size of emgpu_raster_depth_stencil_config"]
+        [::std::mem::size_of::<emgpu_raster_depth_stencil_config>() - 36usize];
+    ["Alignment of emgpu_raster_depth_stencil_config"]
+        [::std::mem::align_of::<emgpu_raster_depth_stencil_config>() - 4usize];
+    ["Offset of field: emgpu_raster_depth_stencil_config::depth_format"]
+        [::std::mem::offset_of!(emgpu_raster_depth_stencil_config, depth_format) - 0usize];
+    ["Offset of field: emgpu_raster_depth_stencil_config::stencil_format"]
+        [::std::mem::offset_of!(emgpu_raster_depth_stencil_config, stencil_format) - 4usize];
+    ["Offset of field: emgpu_raster_depth_stencil_config::depth_test_enable"]
+        [::std::mem::offset_of!(emgpu_raster_depth_stencil_config, depth_test_enable) - 8usize];
+    ["Offset of field: emgpu_raster_depth_stencil_config::depth_write_enabled"]
+        [::std::mem::offset_of!(emgpu_raster_depth_stencil_config, depth_write_enabled) - 9usize];
+    ["Offset of field: emgpu_raster_depth_stencil_config::compare_op"]
+        [::std::mem::offset_of!(emgpu_raster_depth_stencil_config, compare_op) - 12usize];
+    ["Offset of field: emgpu_raster_depth_stencil_config::depth_bounds_test_enable"][::std::mem::offset_of!(
+        emgpu_raster_depth_stencil_config,
+        depth_bounds_test_enable
+    ) - 16usize];
+    ["Offset of field: emgpu_raster_depth_stencil_config::stencil_test_enable"]
+        [::std::mem::offset_of!(emgpu_raster_depth_stencil_config, stencil_test_enable) - 17usize];
+    ["Offset of field: emgpu_raster_depth_stencil_config::front_stencil"]
+        [::std::mem::offset_of!(emgpu_raster_depth_stencil_config, front_stencil) - 20usize];
+    ["Offset of field: emgpu_raster_depth_stencil_config::back_stencil"]
+        [::std::mem::offset_of!(emgpu_raster_depth_stencil_config, back_stencil) - 24usize];
+    ["Offset of field: emgpu_raster_depth_stencil_config::min_depth_bounds"]
+        [::std::mem::offset_of!(emgpu_raster_depth_stencil_config, min_depth_bounds) - 28usize];
+    ["Offset of field: emgpu_raster_depth_stencil_config::max_depth_bounds"]
+        [::std::mem::offset_of!(emgpu_raster_depth_stencil_config, max_depth_bounds) - 32usize];
 };
 #[doc = " @brief Configuration for rasterization vertex input.\n\n Defines how raw vertices are transformed into renderable polygons."]
 #[repr(C)]
@@ -1057,6 +1228,49 @@ const _: () = {
     ["Offset of field: emgpu_raster_vertex_config::attributes"]
         [::std::mem::offset_of!(emgpu_raster_vertex_config, attributes) - 8usize];
 };
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct emgpu_pipeline_colour_attachment {
+    #[doc = " @brief Pixel format of the colour attachment."]
+    pub format: emgpu_format,
+    #[doc = " @brief If TRUE, enables blending across colour attachments."]
+    pub blend_enable: b8,
+    #[doc = " @brief Source blend factors for colour components."]
+    pub src_colour: emgpu_blend_factor,
+    #[doc = " @brief Destination blend factors for colour components."]
+    pub dst_colour: emgpu_blend_factor,
+    #[doc = " @brief Blend operation applied to colour components."]
+    pub colour_op: emgpu_blend_op,
+    #[doc = " @brief Source blend factors for alpha component."]
+    pub src_alpha: emgpu_blend_factor,
+    #[doc = " @brief Destination blend factors for alpha component."]
+    pub dst_alpha: emgpu_blend_factor,
+    #[doc = " @brief Blend operation applied to alpha component."]
+    pub alpha_op: emgpu_blend_op,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of emgpu_pipeline_colour_attachment"]
+        [::std::mem::size_of::<emgpu_pipeline_colour_attachment>() - 32usize];
+    ["Alignment of emgpu_pipeline_colour_attachment"]
+        [::std::mem::align_of::<emgpu_pipeline_colour_attachment>() - 4usize];
+    ["Offset of field: emgpu_pipeline_colour_attachment::format"]
+        [::std::mem::offset_of!(emgpu_pipeline_colour_attachment, format) - 0usize];
+    ["Offset of field: emgpu_pipeline_colour_attachment::blend_enable"]
+        [::std::mem::offset_of!(emgpu_pipeline_colour_attachment, blend_enable) - 4usize];
+    ["Offset of field: emgpu_pipeline_colour_attachment::src_colour"]
+        [::std::mem::offset_of!(emgpu_pipeline_colour_attachment, src_colour) - 8usize];
+    ["Offset of field: emgpu_pipeline_colour_attachment::dst_colour"]
+        [::std::mem::offset_of!(emgpu_pipeline_colour_attachment, dst_colour) - 12usize];
+    ["Offset of field: emgpu_pipeline_colour_attachment::colour_op"]
+        [::std::mem::offset_of!(emgpu_pipeline_colour_attachment, colour_op) - 16usize];
+    ["Offset of field: emgpu_pipeline_colour_attachment::src_alpha"]
+        [::std::mem::offset_of!(emgpu_pipeline_colour_attachment, src_alpha) - 20usize];
+    ["Offset of field: emgpu_pipeline_colour_attachment::dst_alpha"]
+        [::std::mem::offset_of!(emgpu_pipeline_colour_attachment, dst_alpha) - 24usize];
+    ["Offset of field: emgpu_pipeline_colour_attachment::alpha_op"]
+        [::std::mem::offset_of!(emgpu_pipeline_colour_attachment, alpha_op) - 28usize];
+};
 #[doc = " @brief Configuration for a raster pipeline.\n\n Defines the shader layout, vertex input layout, and optional\n vertex/index buffers used when creating a raster pipeline."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -1071,15 +1285,19 @@ pub struct emgpu_raster_pipeline_config {
     pub descriptor_count: u32_,
     #[doc = " @brief Descriptor binding descriptions used by the pipeline."]
     pub descriptors: *mut emgpu_descriptor_desc,
-    #[doc = " @brief Blending configuration, must not be NULL for blending to be enabled."]
-    pub blend_state: *mut emgpu_raster_blend_config,
+    #[doc = " @brief Number of colour attachments."]
+    pub colour_attachment_count: u32_,
+    #[doc = " @brief Compatiable colour attachments with pipeline."]
+    pub colour_attachments: *mut emgpu_pipeline_colour_attachment,
+    #[doc = " @brief Depth/stencil configuration, must not be NULL for depth or stencil operations to be enabled."]
+    pub depth_stencil: *mut emgpu_raster_depth_stencil_config,
     #[doc = " @brief Vertex input configuration, must not be NULL to enable rasterization."]
     pub vertex_input: *mut emgpu_raster_vertex_config,
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
     ["Size of emgpu_raster_pipeline_config"]
-        [::std::mem::size_of::<emgpu_raster_pipeline_config>() - 88usize];
+        [::std::mem::size_of::<emgpu_raster_pipeline_config>() - 104usize];
     ["Alignment of emgpu_raster_pipeline_config"]
         [::std::mem::align_of::<emgpu_raster_pipeline_config>() - 8usize];
     ["Offset of field: emgpu_raster_pipeline_config::api_next"]
@@ -1092,113 +1310,162 @@ const _: () = {
         [::std::mem::offset_of!(emgpu_raster_pipeline_config, descriptor_count) - 56usize];
     ["Offset of field: emgpu_raster_pipeline_config::descriptors"]
         [::std::mem::offset_of!(emgpu_raster_pipeline_config, descriptors) - 64usize];
-    ["Offset of field: emgpu_raster_pipeline_config::blend_state"]
-        [::std::mem::offset_of!(emgpu_raster_pipeline_config, blend_state) - 72usize];
+    ["Offset of field: emgpu_raster_pipeline_config::colour_attachment_count"]
+        [::std::mem::offset_of!(emgpu_raster_pipeline_config, colour_attachment_count) - 72usize];
+    ["Offset of field: emgpu_raster_pipeline_config::colour_attachments"]
+        [::std::mem::offset_of!(emgpu_raster_pipeline_config, colour_attachments) - 80usize];
+    ["Offset of field: emgpu_raster_pipeline_config::depth_stencil"]
+        [::std::mem::offset_of!(emgpu_raster_pipeline_config, depth_stencil) - 88usize];
     ["Offset of field: emgpu_raster_pipeline_config::vertex_input"]
-        [::std::mem::offset_of!(emgpu_raster_pipeline_config, vertex_input) - 80usize];
+        [::std::mem::offset_of!(emgpu_raster_pipeline_config, vertex_input) - 96usize];
+};
+#[doc = " @brief Info for binding a raster pipeline to the current renderpass."]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct emgpu_raster_bind_info {
+    #[doc = " @brief Connected pipeline to computepass."]
+    pub pipeline: *const emgpu_pipeline,
+    #[doc = " @brief Resources to export from pipeline."]
+    pub export_resources: *const emgpu_resource_export,
+    #[doc = " @brief Number of export resources."]
+    pub export_resource_count: u32_,
+    #[doc = " @brief Resources to import into pipeline."]
+    pub import_resources: *const emgpu_resource_import,
+    #[doc = " @brief Number of import resources."]
+    pub import_resource_count: u32_,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of emgpu_raster_bind_info"][::std::mem::size_of::<emgpu_raster_bind_info>() - 40usize];
+    ["Alignment of emgpu_raster_bind_info"]
+        [::std::mem::align_of::<emgpu_raster_bind_info>() - 8usize];
+    ["Offset of field: emgpu_raster_bind_info::pipeline"]
+        [::std::mem::offset_of!(emgpu_raster_bind_info, pipeline) - 0usize];
+    ["Offset of field: emgpu_raster_bind_info::export_resources"]
+        [::std::mem::offset_of!(emgpu_raster_bind_info, export_resources) - 8usize];
+    ["Offset of field: emgpu_raster_bind_info::export_resource_count"]
+        [::std::mem::offset_of!(emgpu_raster_bind_info, export_resource_count) - 16usize];
+    ["Offset of field: emgpu_raster_bind_info::import_resources"]
+        [::std::mem::offset_of!(emgpu_raster_bind_info, import_resources) - 24usize];
+    ["Offset of field: emgpu_raster_bind_info::import_resource_count"]
+        [::std::mem::offset_of!(emgpu_raster_bind_info, import_resource_count) - 32usize];
 };
 unsafe extern "C" {
-    #[doc = " @brief Creates a raster pipeline.\n\n @param device Pointer to the device instance.\n @param allocator Allocator used to manage device memory.\n @param config Pipeline configuration.\n @param bound_renderpass Render pass the pipeline is compatible with.\n @param out_pipeline Output pipeline.\n @return Ember result code; returns `EMBER_RESULT_OK` if succeeds."]
+    #[doc = " @brief Creates a raster pipeline.\n\n @param device Pointer to the device instance.\n @param allocator Allocator used to manage device memory.\n @param config Pipeline configuration.\n @param out_pipeline Output pipeline.\n @return Ember result code; returns `EMBER_RESULT_OK` if succeeds."]
     pub fn emgpu_raster_pipeline_create(
         device: *mut emgpu_device,
         allocator: *mut em_allocator,
         config: *const emgpu_raster_pipeline_config,
-        bound_renderpass: *mut emgpu_renderpass,
         out_pipeline: *mut emgpu_pipeline,
     ) -> em_result;
 }
-#[doc = " @brief Opaque handle to a texture valid within a single GPU frame.\n\n This identifier references a texture resource that is only guaranteed\n to be valid during the lifetime of the emgpu_frame in which it was created\n or imported."]
-pub type emgpu_frame_texture = u32_;
-#[doc = " @brief Opaque handle to a frame-local GPU resource reference.\n\n Represents a transient resource binding within a frame. These handles\n are only valid for the duration of the frame execution."]
-pub type emgpu_frame_resource = u32_;
-#[doc = " @brief Represents a single GPU frame used for command recording and submission.\n\n An emgpu_frame acts as a transient container for all GPU commands\n required to render or dispatch work for a single frame. It provides\n a linear command recording model and manages frame-local resources."]
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct emgpu_frame {
-    #[doc = " @brief Indicates whether the frame was successfully initialized."]
-    pub initialized: b8,
-    #[doc = " @brief Index used for allocating frame-local resources."]
-    pub current_resource_idx: u32_,
-    pub allocator: *mut em_allocator,
-    #[doc = " @brief Linear command buffer storing recorded GPU commands.\n\n Commands are appended during frame recording and later consumed\n during submission."]
-    pub commands_buf: *mut ::std::os::raw::c_void,
-    pub buffer_size: u64_,
-    pub buffer_capacity: u64_,
-}
-#[allow(clippy::unnecessary_operation, clippy::identity_op)]
-const _: () = {
-    ["Size of emgpu_frame"][::std::mem::size_of::<emgpu_frame>() - 40usize];
-    ["Alignment of emgpu_frame"][::std::mem::align_of::<emgpu_frame>() - 8usize];
-    ["Offset of field: emgpu_frame::initialized"]
-        [::std::mem::offset_of!(emgpu_frame, initialized) - 0usize];
-    ["Offset of field: emgpu_frame::current_resource_idx"]
-        [::std::mem::offset_of!(emgpu_frame, current_resource_idx) - 4usize];
-    ["Offset of field: emgpu_frame::allocator"]
-        [::std::mem::offset_of!(emgpu_frame, allocator) - 8usize];
-    ["Offset of field: emgpu_frame::commands_buf"]
-        [::std::mem::offset_of!(emgpu_frame, commands_buf) - 16usize];
-    ["Offset of field: emgpu_frame::buffer_size"]
-        [::std::mem::offset_of!(emgpu_frame, buffer_size) - 24usize];
-    ["Offset of field: emgpu_frame::buffer_capacity"]
-        [::std::mem::offset_of!(emgpu_frame, buffer_capacity) - 32usize];
-};
 unsafe extern "C" {
-    #[doc = " @brief Submits a frame object for GPU execution.\n\n @param device Pointer to the device instance.\n @param frame Pointer to frame object.\n @return Ember result code; returns `EMBER_RESULT_OK` if succeds."]
-    pub fn emgpu_device_submit(device: *mut emgpu_device, frame: *const emgpu_frame) -> em_result;
-}
-unsafe extern "C" {
-    #[doc = " @brief Initializes a GPU frame for command recording.\n\n @param device Pointer to the device instance.\n @param out_frame Pointer to the frame to initialize.\n\n @return EMBER_RESULT_OK on success, or an error code on failure."]
-    pub fn emgpu_frame_init(device: *mut emgpu_device, out_frame: *mut emgpu_frame) -> em_result;
-}
-unsafe extern "C" {
-    #[doc = " @brief Acquires the next available surface texture for rendering.\n\n Enqueues a presentation acquisition operation and returns a frame-local\n reference to the acquired surface texture.\n\n @param frame Pointer to the frame.\n @param surface Surface to acquire the next presentation image from.\n\n @return A frame-local texture reference valid for the duration of the frame."]
-    pub fn emgpu_frame_accquire_surface(
-        frame: *mut emgpu_frame,
-        surface: *mut emgpu_surface,
-    ) -> emgpu_frame_texture;
-}
-unsafe extern "C" {
-    #[doc = " @brief Imports a persistent texture into the frame.\n\n Registers an external GPU texture for use within the frame and returns\n a frame-local reference to it.\n\n @param frame Pointer to the frame.\n @param texture Pointer to the GPU texture to import.\n\n @return A frame-local texture reference."]
-    pub fn emgpu_frame_import_texture(
-        frame: *mut emgpu_frame,
-        texture: *mut emgpu_texture,
-    ) -> emgpu_frame_texture;
-}
-unsafe extern "C" {
-    #[doc = " @brief Sets the renderable area for subsequent rendering commands.\n\n Defines the viewport/render area used by following graphics commands.\n This does not affect compute operations.\n\n @param frame Pointer to the frame.\n @param origin Top-left coordinate of the render area.\n @param size Dimensions of the render area."]
-    pub fn emgpu_frame_set_renderarea(frame: *mut emgpu_frame, origin: uvec2, size: uvec2);
-}
-unsafe extern "C" {
-    #[doc = " @brief Begins a render pass.\n\n Binds a render pass and attaches output textures for rendering.\n\n @param frame Pointer to the frame.\n @param renderpass Render pass to begin.\n @param clear_colour Clear colour to current renderarea.\n @param texture_attachments Array of frame-local texture references.\n @param attachment_count Number of attachments in the array."]
-    pub fn emgpu_frame_begin_renderpass(
-        frame: *mut emgpu_frame,
-        renderpass: *mut emgpu_renderpass,
-        clear_colour: u32_,
-        texture_attachments: *mut emgpu_frame_texture,
-        attachment_count: u32_,
+    #[doc = " @brief Binds a raster pipeline.\n\n @param command_buf Pointer to the command buffer.\n @param pipeline Pipeline to bind."]
+    pub fn emgpu_cmd_bind_raster_pipeline(
+        command_buf: *mut emgpu_command_buffer,
+        bind_info: *mut emgpu_raster_bind_info,
     );
 }
 unsafe extern "C" {
-    #[doc = " @brief Ends the currently active render pass.\n\n @param frame Pointer to the frame."]
-    pub fn emgpu_frame_end_renderpass(frame: *mut emgpu_frame);
+    #[doc = " @brief Binds vertex buffers to current raster pipeline.\n\n @param command_buf Pointer to the command buffer;\n @param vertex_buffer_count Number of vertex buffers.\n @param vertex_buffer Vertex buffers."]
+    pub fn emgpu_cmd_bind_vertex_buffers(
+        command_buf: *mut emgpu_command_buffer,
+        vertex_buffer_count: u32_,
+        vertex_buffers: *mut emgpu_buffer,
+    );
 }
 unsafe extern "C" {
-    #[doc = " @brief Binds a graphics or compute pipeline.\n\n Optionally binds vertex and index buffers for graphics pipelines.\n\n @param frame Pointer to the frame.\n @param pipeline Pipeline to bind.\n @param vertex_buffer_count Optional number of vertex buffers.\n @param vertex_buffer Optional vertex buffer.\n @param index_buffer Optional index buffer."]
-    pub fn emgpu_frame_bind_pipeline(
-        frame: *mut emgpu_frame,
-        pipeline: *mut emgpu_pipeline,
-        vertex_buffer_count: u32_,
-        vertex_buffer: *mut emgpu_buffer,
+    #[doc = " @brief Binds index buffer to current raster pipeline.\n\n @param command_buf Pointer to the command buffer.\n @param indx_biffer Index buffer to bind."]
+    pub fn emgpu_cmd_bind_index_buffer(
+        command_buf: *mut emgpu_command_buffer,
         index_buffer: *mut emgpu_buffer,
     );
 }
 unsafe extern "C" {
-    #[doc = " @brief Issues a non-indexed draw call.\n\n @param frame Pointer to the frame.\n @param vertex_count Number of vertices to draw.\n @param instance_count Number of instances to draw.\n @note Whetever a index buffer was bound indicates whetever its a indexed call."]
-    pub fn emgpu_frame_draw(frame: *mut emgpu_frame, vertex_count: u32_, instance_count: u32_);
+    #[doc = " @brief Issues a draw call.\n\n @param command_buf Pointer to the command buffer.\n @param vertex_count Number of vertices to draw.\n @param instance_count Number of instances to draw.\n\n @note Whetever a index buffer was bound\n       indicates whetever its a indexed call."]
+    pub fn emgpu_cmd_draw(
+        command_buf: *mut emgpu_command_buffer,
+        vertex_count: u32_,
+        instance_count: u32_,
+    );
+}
+#[doc = " @brief Backend-agnostic GPU surface objects.\n\n Represents a backend-agnsotic object that connectes a platform surface."]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct emgpu_surface {
+    #[doc = " @brief Backend-specific internal data."]
+    pub internal_data: *mut ::std::os::raw::c_void,
+    #[doc = " @brief Format of the pixel(s) attachted to the platform surface."]
+    pub pixel_format: emgpu_format,
+    #[doc = " @brief Number of owned images used for concurrent rendering."]
+    pub image_count: u32_,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of emgpu_surface"][::std::mem::size_of::<emgpu_surface>() - 16usize];
+    ["Alignment of emgpu_surface"][::std::mem::align_of::<emgpu_surface>() - 8usize];
+    ["Offset of field: emgpu_surface::internal_data"]
+        [::std::mem::offset_of!(emgpu_surface, internal_data) - 0usize];
+    ["Offset of field: emgpu_surface::pixel_format"]
+        [::std::mem::offset_of!(emgpu_surface, pixel_format) - 8usize];
+    ["Offset of field: emgpu_surface::image_count"]
+        [::std::mem::offset_of!(emgpu_surface, image_count) - 12usize];
+};
+unsafe extern "C" {
+    #[doc = " @brief Resizes a rendering size to given size.\n\n @param device Pointer to the device instance.\n @param allocator Pointer to same allocator used to create surface.\n @param surface Surface to resize.\n @param new_size New size of surface. 0, 0 = minimized.\n @note Surface is not guarenteeed to be resized immediately; In\n       some backends surface is resized next frame it's rendered to."]
+    pub fn emgpu_surface_resize(
+        device: *mut emgpu_device,
+        allocator: *mut em_allocator,
+        surface: *mut emgpu_surface,
+        new_size: uvec2,
+    ) -> em_result;
 }
 unsafe extern "C" {
-    #[doc = " @brief Dispatches a compute workload.\n\n @param frame Pointer to the frame.\n @param group_size Number of compute workgroups in XYZ dimensions."]
-    pub fn emgpu_frame_dispatch(frame: *mut emgpu_frame, group_size: uvec3);
+    #[doc = " @brief Destroys a rendering surface.\n\n @param device Pointer to the device instance.\n @param allocator Allocator used to manage device memory.\n @param surface Surface to destroy."]
+    pub fn emgpu_surface_destroy(
+        device: *mut emgpu_device,
+        allocator: *mut em_allocator,
+        surface: *mut emgpu_surface,
+    );
+}
+unsafe extern "C" {
+    #[doc = " @brief Acquires the next available surface texture for rendering.\n\n Enqueues a presentation acquisition operation and returns a local\n reference to the acquired surface texture.\n\n @param command_buf Pointer to the command buffer.\n @param surface Surface to acquire the next presentation image from.\n\n @return A local framebuffer handle valid for the duration of the command buffer recording."]
+    pub fn emgpu_cmd_acquire_surface(
+        command_buf: *mut emgpu_command_buffer,
+        surface: *mut emgpu_surface,
+    ) -> emgpu_local_framebuffer;
+}
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct emplat_clock_timestamp {
+    pub seconds: i64_,
+    pub nanoseconds: i32_,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of emplat_clock_timestamp"][::std::mem::size_of::<emplat_clock_timestamp>() - 16usize];
+    ["Alignment of emplat_clock_timestamp"]
+        [::std::mem::align_of::<emplat_clock_timestamp>() - 8usize];
+    ["Offset of field: emplat_clock_timestamp::seconds"]
+        [::std::mem::offset_of!(emplat_clock_timestamp, seconds) - 0usize];
+    ["Offset of field: emplat_clock_timestamp::nanoseconds"]
+        [::std::mem::offset_of!(emplat_clock_timestamp, nanoseconds) - 8usize];
+};
+unsafe extern "C" {
+    #[doc = " @brief Returns the current time at UTC+0 time.\n\n @return The current time at UTC+0."]
+    pub fn emplat_clock_utc() -> emplat_clock_timestamp;
+}
+unsafe extern "C" {
+    #[doc = " @brief Retrieves the current local UTC time.\n\n @return The current system time in UTC."]
+    pub fn emplat_clock_local() -> emplat_clock_timestamp;
+}
+unsafe extern "C" {
+    #[doc = " @brief Retrieves the system timezone offset.\n\n @return The current local timezone offset from UTC, in seconds.\n"]
+    pub fn emplat_clock_timezone() -> i32_;
+}
+unsafe extern "C" {
+    #[doc = " @brief Converts the current time to a specified timezone.\n\n @param timezone Timezone offset from UTC, in seconds.\n\n @return The current time adjusted to the specified timezone."]
+    pub fn emplat_clock_at_timezone(timezone: i32_) -> emplat_clock_timestamp;
 }
 #[doc = "< Open file for reading"]
 pub const emplat_file_flags_EMBER_FILE_FLAGS_READ: emplat_file_flags = 1;
@@ -1390,6 +1657,22 @@ unsafe extern "C" {
 unsafe extern "C" {
     #[doc = " @brief Unmaps a shared memory region from the process.\n\n @param name Name of the shared memory region.\n @param size Size of the region in bytes.\n @param state Mapped memory state returned by emplat_open_shm().\n\n @note After unloading, the handle becomes invalid and must not be used."]
     pub fn emplat_shm_close(state: *mut emplat_shm_state);
+}
+#[doc = "< Unrecoverable error"]
+pub const emplat_log_level_EMBER_LOG_LEVEL_FATAL: emplat_log_level = 0;
+#[doc = "< Error condition"]
+pub const emplat_log_level_EMBER_LOG_LEVEL_ERROR: emplat_log_level = 1;
+#[doc = "< Warning condition"]
+pub const emplat_log_level_EMBER_LOG_LEVEL_WARN: emplat_log_level = 2;
+#[doc = "< Informational message"]
+pub const emplat_log_level_EMBER_LOG_LEVEL_INFO: emplat_log_level = 3;
+#[doc = "< Detailed trace/debugging information"]
+pub const emplat_log_level_EMBER_LOG_LEVEL_TRACE: emplat_log_level = 4;
+#[doc = " @brief Defines severity levels for logging output.\n\n Higher numeric values generally represent lower severity / more verbose logs."]
+pub type emplat_log_level = ::std::os::raw::c_uint;
+unsafe extern "C" {
+    #[doc = " @brief Logs a message to the default system logger.\n\n @param log_level Severity level of the log message.\n @param message Message string."]
+    pub fn emplat_print(log_level: emplat_log_level, message: *const ::std::os::raw::c_char);
 }
 unsafe extern "C" {
     #[doc = " @brief Creates the default system allocator (malloc/free-backed).\n\n Implemented by current Driver.\n\n @return Initialized allocator instance."]
@@ -1660,6 +1943,8 @@ unsafe extern "C" {
     #[doc = " @brief Retrieves detailed information about a timer.\n\n @param timer Pointer to the timer.\n\n @return A populated @ref emplat_timer_info structure describing the timer."]
     pub fn emplat_timer_get_info(timer: *mut emplat_timer) -> emplat_timer_info;
 }
+pub type emwin_window_id = u64_;
+pub type emwin_monitor_id = u64_;
 #[doc = " @brief Platform desktop handle.\n\n A desktop represents a connection to a display manager (e.g. Wayland or Win32).\n To create one you must have at least one window. The desktop controls state such\n as input state, event callbacks, joysticks and monitor control."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -1677,6 +1962,48 @@ const _: () = {
         [::std::mem::offset_of!(emwin_desktop, initialized) - 0usize];
     ["Offset of field: emwin_desktop::internal_context"]
         [::std::mem::offset_of!(emwin_desktop, internal_context) - 8usize];
+};
+#[doc = " @brief Describes a physical display monitor."]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct emwin_monitor {
+    #[doc = " @brief Position of the monitor in compositor space."]
+    pub position: uvec2,
+    #[doc = " @brief Physical dimensions of the monitor in millimeters."]
+    pub physical_size: uvec2,
+    #[doc = " @brief Logical dimensions of the monitor in pixels."]
+    pub size: uvec2,
+    #[doc = " @brief Subpixel layout of the monitor."]
+    pub subpixel: i32_,
+    #[doc = " @brief Manufacturer name."]
+    pub make: *const ::std::os::raw::c_char,
+    #[doc = " @brief Model name."]
+    pub model: *const ::std::os::raw::c_char,
+    #[doc = " @brief Unique output name assigned by the compositor."]
+    pub name: *const ::std::os::raw::c_char,
+    #[doc = " @brief Transform applied to the monitor."]
+    pub transform: i32_,
+    #[doc = " @brief Unique identifier for the monitor."]
+    pub id: emwin_monitor_id,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of emwin_monitor"][::std::mem::size_of::<emwin_monitor>() - 72usize];
+    ["Alignment of emwin_monitor"][::std::mem::align_of::<emwin_monitor>() - 8usize];
+    ["Offset of field: emwin_monitor::position"]
+        [::std::mem::offset_of!(emwin_monitor, position) - 0usize];
+    ["Offset of field: emwin_monitor::physical_size"]
+        [::std::mem::offset_of!(emwin_monitor, physical_size) - 8usize];
+    ["Offset of field: emwin_monitor::size"][::std::mem::offset_of!(emwin_monitor, size) - 16usize];
+    ["Offset of field: emwin_monitor::subpixel"]
+        [::std::mem::offset_of!(emwin_monitor, subpixel) - 24usize];
+    ["Offset of field: emwin_monitor::make"][::std::mem::offset_of!(emwin_monitor, make) - 32usize];
+    ["Offset of field: emwin_monitor::model"]
+        [::std::mem::offset_of!(emwin_monitor, model) - 40usize];
+    ["Offset of field: emwin_monitor::name"][::std::mem::offset_of!(emwin_monitor, name) - 48usize];
+    ["Offset of field: emwin_monitor::transform"]
+        [::std::mem::offset_of!(emwin_monitor, transform) - 56usize];
+    ["Offset of field: emwin_monitor::id"][::std::mem::offset_of!(emwin_monitor, id) - 64usize];
 };
 unsafe extern "C" {
     #[doc = " Polls for the next pending desktop event without blocking.\n\n If an event is available, it is written to @p out_event and a success\n result is returned. If no events are pending, the function returns\n immediately with a result indicating that no event was available.\n\n @param desktop The desktop instance to poll.\n @param out_event Receives the next event if one is available.\n\n @return A Ember result code indicating success, no pending events, or an error."]
@@ -1785,6 +2112,116 @@ unsafe extern "C" {
         out_colour: *mut u32_,
     ) -> em_result;
 }
+#[doc = " @brief Describes a data format used by the ember_window subsystem.\n Any other format values outside this enum is not supported by\n the subsystem.\n\n Used for shm software rendering, window icons and custom cursors."]
+pub type emwin_format = u32_;
+#[doc = " @brief Configuration for a shared-memory pool."]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct emwin_shm_pool_config {
+    #[doc = " @brief Size of the shared-memory pool in bytes."]
+    pub size: u64_,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of emwin_shm_pool_config"][::std::mem::size_of::<emwin_shm_pool_config>() - 8usize];
+    ["Alignment of emwin_shm_pool_config"]
+        [::std::mem::align_of::<emwin_shm_pool_config>() - 8usize];
+    ["Offset of field: emwin_shm_pool_config::size"]
+        [::std::mem::offset_of!(emwin_shm_pool_config, size) - 0usize];
+};
+#[doc = " @brief Represents a shared-memory pool.\n\n A shared-memory pool owns the backing storage from which one or more\n shared-memory buffers can be created."]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct emwin_shm_pool {
+    #[doc = " @brief Internal platform-specific pool data."]
+    pub internal_data: *mut ::std::os::raw::c_void,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of emwin_shm_pool"][::std::mem::size_of::<emwin_shm_pool>() - 8usize];
+    ["Alignment of emwin_shm_pool"][::std::mem::align_of::<emwin_shm_pool>() - 8usize];
+    ["Offset of field: emwin_shm_pool::internal_data"]
+        [::std::mem::offset_of!(emwin_shm_pool, internal_data) - 0usize];
+};
+unsafe extern "C" {
+    #[doc = " @brief Creates a shared-memory pool.\n\n @param desktop Desktop connection the pool belongs to.\n @param allocator Allocator used to create the pool.\n @param config Pool configuration.\n @param out_pool Receives the created pool.\n\n @return Ember result code; returns `EMBER_RESULT_OK` if succeds."]
+    pub fn emwin_shm_pool_create(
+        desktop: *mut emwin_desktop,
+        allocator: *mut em_allocator,
+        config: *const emwin_shm_pool_config,
+        out_pool: *mut emwin_shm_pool,
+    ) -> em_result;
+}
+unsafe extern "C" {
+    #[doc = " @brief Destroys a shared-memory pool.\n\n All buffers created from the pool must be freed before destroying it.\n\n @param allocator Allocator used to create the pool.\n @param pool Pool to destroy."]
+    pub fn emwin_shm_pool_destroy(allocator: *mut em_allocator, pool: *mut emwin_shm_pool);
+}
+#[doc = " @brief Configuration for a shared-memory buffer."]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct emwin_shm_buffer_config {
+    #[doc = " @brief Pixel format of the image stored in the buffer."]
+    pub image_format: emwin_format,
+    #[doc = " @brief Byte offset of the buffer within its shared-memory pool."]
+    pub offset: u64_,
+    #[doc = " @brief Size of the buffer in bytes."]
+    pub size: uvec2,
+    #[doc = " @brief Number of bytes between the start of consecutive image rows."]
+    pub stride: u64_,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of emwin_shm_buffer_config"][::std::mem::size_of::<emwin_shm_buffer_config>() - 32usize];
+    ["Alignment of emwin_shm_buffer_config"]
+        [::std::mem::align_of::<emwin_shm_buffer_config>() - 8usize];
+    ["Offset of field: emwin_shm_buffer_config::image_format"]
+        [::std::mem::offset_of!(emwin_shm_buffer_config, image_format) - 0usize];
+    ["Offset of field: emwin_shm_buffer_config::offset"]
+        [::std::mem::offset_of!(emwin_shm_buffer_config, offset) - 8usize];
+    ["Offset of field: emwin_shm_buffer_config::size"]
+        [::std::mem::offset_of!(emwin_shm_buffer_config, size) - 16usize];
+    ["Offset of field: emwin_shm_buffer_config::stride"]
+        [::std::mem::offset_of!(emwin_shm_buffer_config, stride) - 24usize];
+};
+#[doc = " @brief Represents a shared-memory image buffer.\n\n A buffer describes a region of a shared-memory pool that can be used\n as pixel storage for a window surface."]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct emwin_shm_buffer {
+    #[doc = " @brief Internal platform-specific buffer data."]
+    pub internal_data: *mut ::std::os::raw::c_void,
+    #[doc = " @brief Pointer to the buffer's CPU-accessible pixel data."]
+    pub buffer: *mut ::std::os::raw::c_void,
+    #[doc = " @brief Width and height of the image in pixels."]
+    pub size: uvec2,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of emwin_shm_buffer"][::std::mem::size_of::<emwin_shm_buffer>() - 24usize];
+    ["Alignment of emwin_shm_buffer"][::std::mem::align_of::<emwin_shm_buffer>() - 8usize];
+    ["Offset of field: emwin_shm_buffer::internal_data"]
+        [::std::mem::offset_of!(emwin_shm_buffer, internal_data) - 0usize];
+    ["Offset of field: emwin_shm_buffer::buffer"]
+        [::std::mem::offset_of!(emwin_shm_buffer, buffer) - 8usize];
+    ["Offset of field: emwin_shm_buffer::size"]
+        [::std::mem::offset_of!(emwin_shm_buffer, size) - 16usize];
+};
+unsafe extern "C" {
+    #[doc = " @brief Allocates a shared-memory buffer from a pool.\n\n @param pool Pool from which the buffer is allocated.\n @param allocator Allocator used to create the buffer.\n @param config Buffer configuration.\n @param out_buffer Receives the allocated buffer.\n\n @return Ember result code; returns `EMBER_RESULT_OK` if succeds."]
+    pub fn emwin_shm_buffer_alloc(
+        pool: *mut emwin_shm_pool,
+        allocator: *mut em_allocator,
+        config: *const emwin_shm_buffer_config,
+        out_buffer: *mut emwin_shm_buffer,
+    ) -> em_result;
+}
+unsafe extern "C" {
+    #[doc = " @brief Frees a shared-memory buffer.\n\n @param pool Pool containing the buffer.\n @param allocator Allocator used to create the buffer.\n @param buffer Buffer to free."]
+    pub fn emwin_shm_buffer_free(
+        pool: *mut emwin_shm_pool,
+        allocator: *mut em_allocator,
+        buffer: *mut emwin_shm_buffer,
+    );
+}
 #[doc = "< Standard windowed mode."]
 pub const emwin_window_mode_EMBER_WINDOW_MODE_WINDOWED: emwin_window_mode = 0;
 #[doc = "< Window is created maximized."]
@@ -1830,8 +2267,6 @@ pub struct emwin_window_config {
     pub max_size: uvec2,
     #[doc = " @brief Initial client area size in pixels."]
     pub size: uvec2,
-    #[doc = " @brief A connection to the global system's WM.\n\n If NULL, a new desktop object will be created on window open."]
-    pub desktop: *mut emwin_desktop,
 }
 #[repr(C)]
 #[derive(Copy, Clone)]
@@ -1854,7 +2289,7 @@ const _: () = {
 };
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of emwin_window_config"][::std::mem::size_of::<emwin_window_config>() - 64usize];
+    ["Size of emwin_window_config"][::std::mem::size_of::<emwin_window_config>() - 56usize];
     ["Alignment of emwin_window_config"][::std::mem::align_of::<emwin_window_config>() - 8usize];
     ["Offset of field: emwin_window_config::window_mode"]
         [::std::mem::offset_of!(emwin_window_config, window_mode) - 0usize];
@@ -1870,16 +2305,14 @@ const _: () = {
         [::std::mem::offset_of!(emwin_window_config, max_size) - 40usize];
     ["Offset of field: emwin_window_config::size"]
         [::std::mem::offset_of!(emwin_window_config, size) - 48usize];
-    ["Offset of field: emwin_window_config::desktop"]
-        [::std::mem::offset_of!(emwin_window_config, desktop) - 56usize];
 };
-pub type emwin_window_id = u64_;
-#[doc = " @brief Platform window handle.\n\n Represents a platform window and its associated state.\n All platform- and renderer-specific details are stored internally\n and are opaque to the user."]
+#[doc = " @brief Platform window handle.\n\n Represents a platform window and its associated state.\n All platform-specific and renderer-specific details are stored internally\n and are opaque to the user."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct emwin_window {
     #[doc = " @brief Current client area size in pixels. Updated on resize events."]
     pub size: uvec2,
+    #[doc = " @brief Assigned ID of the window."]
     pub id: emwin_window_id,
     #[doc = " @brief Current window title.\n\n This string is owned by the window and may be reallocated when changed."]
     pub title: *mut ::std::os::raw::c_char,
@@ -1901,29 +2334,22 @@ const _: () = {
         [::std::mem::offset_of!(emwin_window, internal_context) - 32usize];
 };
 unsafe extern "C" {
-    #[doc = " @brief Creates a default window configuration.\n\n The returned configuration contains sensible defaults for all fields.\n\n @return A default-initialized @ref emwin_window_config."]
-    pub fn emwin_window_default() -> emwin_window_config;
-}
-unsafe extern "C" {
-    #[doc = " @brief Creates and opens a window.\n\n Initialises a platform window using the provided configuration and writes\n the resulting state to @p out_window.\n\n @param config Pointer to the window configuration.\n @param allocator Allocator used for internal allocations.\n @param out_window Pointer to the window to initialise.\n @param out_desktop Pointer to already created desktop, may be NULL.\n @return Ember result code; returns `EMBER_RESULT_OK` if succeeds.\n\n @note Passing a valid @p out_desktop is strongly recommended to avoid\n       reinitialising shared global platform state."]
+    #[doc = " @brief Creates and opens a window.\n\n Initialises a platform window using the provided configuration and writes\n the resulting state to @p out_window.\n\n @param allocator Allocator used for internal allocations.\n @param config Pointer to the window configuration.\n @param monitor Monitor to assign window to.\n @param out_window Pointer to the window to initialise.\n @param out_desktop Pointer to desktop, lazyily initialises.\n @return Ember result code; returns `EMBER_RESULT_OK` if succeeds.\n\n @note Passing a valid @p out_desktop is strongly recommended to avoid\n       reinitialising shared global platform state."]
     pub fn emwin_window_open(
-        config: *const emwin_window_config,
         allocator: *mut em_allocator,
+        config: *const emwin_window_config,
+        monitor: emwin_monitor_id,
         out_window: *mut emwin_window,
         out_desktop: *mut *mut emwin_desktop,
     ) -> em_result;
 }
 unsafe extern "C" {
-    #[doc = " @brief Forces closing a window and destroys all OS resources.\n\n Releases all platform and renderer resources associated with the window and immediatly closes window.\n\n @param window Pointer to the window to close."]
+    #[doc = " @brief Forces closing a window and destroys all OS resources.\n\n Releases all platform and renderer resources associated with the window and immediatly closes.\n\n @param window Pointer to the window to close."]
     pub fn emwin_window_close(allocator: *mut em_allocator, window: *mut emwin_window);
 }
 unsafe extern "C" {
-    #[doc = " @brief Request the closure of window.\n\n This sets the value in @ref emwin_window_should_close to TRUE.\n\n @param window Pointer to the window to close.\n @note This is different to @ref emwin_window_close as it only notifies your application\n       next time you call @ref emwin_window_should_close, you may or may not choose to ignore it."]
+    #[doc = " @brief Request the closure of window.\n\n This submits a window close event to the desktop-wide event queue.\n\n @param window Pointer to the window to close.\n\n @note This is different to @ref emwin_window_close\n       as it only notifies your application"]
     pub fn emwin_window_request_close(window: *mut emwin_window);
-}
-unsafe extern "C" {
-    #[doc = " @brief Checks whether the window has been requested to close.\n\n This typically becomes TRUE when the user attempts to close the window\n (e.g., clicking the close button) or after calling @ref emwin_window_request_close.\n\n @param window Pointer to the window.\n @return TRUE if the window should close; otherwise FALSE."]
-    pub fn emwin_window_should_close(window: *const emwin_window) -> b8;
 }
 unsafe extern "C" {
     #[doc = " @brief Set visbility of the window.\n\n This immediately shows / hides the window when called.\n\n @param window Pointer to the window.\n @param visible Whetever to show or hide."]
@@ -1932,6 +2358,18 @@ unsafe extern "C" {
 unsafe extern "C" {
     #[doc = " @brief Checks whether the window is visible or hidden.\n\n @param window Pointer to the window.\n @return TRUE if the window is visible; otherwise FALSE."]
     pub fn emwin_window_visible(window: *const emwin_window) -> b8;
+}
+unsafe extern "C" {
+    #[doc = " @brief Attaches a shared-memory buffer to a window.\n\n The buffer is used as the window's backing pixel storage. The specified\n offset determines the position within the window at which the buffer is\n attached.\n\n @param window Window to attach the buffer to.\n @param buffer Shared-memory buffer to attach.\n @param offset Offset within the window at which to attach the buffer.\n\n @return Ember result code; returns `EMBER_RESULT_OK` if succeeds."]
+    pub fn emwin_window_attach(
+        window: *mut emwin_window,
+        buffer: *mut emwin_shm_buffer,
+        offset: uvec2,
+    ) -> em_result;
+}
+unsafe extern "C" {
+    #[doc = " @brief Marks a region of a window as damaged.\n\n The damaged region indicates an area whose contents have changed and\n should be presented to the desktop.\n\n @param window Window whose contents were modified.\n @param offset Offset of the damaged region within the window.\n @param size Size of the damaged region.\n\n @return Ember result code; returns `EMBER_RESULT_OK` if succeeds."]
+    pub fn emwin_window_damage(window: *mut emwin_window, offset: uvec2, size: uvec2) -> em_result;
 }
 pub const emwin_key_code_EMBER_KEY_SPACE: emwin_key_code = 0;
 pub const emwin_key_code_EMBER_KEY_APOSTROPHE: emwin_key_code = 1;
@@ -2178,26 +2616,30 @@ unsafe extern "C" {
         out_state: *mut emwin_joystick_state,
     );
 }
+#[doc = "< New monitor was connected."]
+pub const emwin_event_type_EMWIN_EVENT_MONITOR_CONNECT: emwin_event_type = 0;
+#[doc = "< Monitor has been disconnected."]
+pub const emwin_event_type_EMWIN_EVENT_MONITOR_DISCONNECT: emwin_event_type = 1;
 #[doc = "< Window close was requested."]
-pub const emwin_event_type_EMWIN_EVENT_WINDOW_CLOSE: emwin_event_type = 0;
+pub const emwin_event_type_EMWIN_EVENT_WINDOW_CLOSE: emwin_event_type = 2;
 #[doc = "< Window client area size changed."]
-pub const emwin_event_type_EMWIN_EVENT_WINDOW_RESIZE: emwin_event_type = 1;
+pub const emwin_event_type_EMWIN_EVENT_WINDOW_RESIZE: emwin_event_type = 3;
 #[doc = "< Window client area size changed."]
-pub const emwin_event_type_EMWIN_EVENT_WINDOW_FOCUS_GAINED: emwin_event_type = 2;
+pub const emwin_event_type_EMWIN_EVENT_WINDOW_FOCUS_GAINED: emwin_event_type = 4;
 #[doc = "< Window lost keyboard focus."]
-pub const emwin_event_type_EMWIN_EVENT_WINDOW_FOCUS_LOST: emwin_event_type = 3;
+pub const emwin_event_type_EMWIN_EVENT_WINDOW_FOCUS_LOST: emwin_event_type = 5;
 #[doc = "< Keyboard key was pressed or released."]
-pub const emwin_event_type_EMWIN_EVENT_INPUT_KEY_ACTION: emwin_event_type = 4;
+pub const emwin_event_type_EMWIN_EVENT_INPUT_KEY_ACTION: emwin_event_type = 6;
 #[doc = "< Mouse moved."]
-pub const emwin_event_type_EMWIN_EVENT_INPUT_MOUSE_MOTION: emwin_event_type = 5;
+pub const emwin_event_type_EMWIN_EVENT_INPUT_MOUSE_MOTION: emwin_event_type = 7;
 #[doc = "< Mouse button was pressed or released."]
-pub const emwin_event_type_EMWIN_EVENT_INPUT_MOUSE_BUTTON_ACTION: emwin_event_type = 6;
+pub const emwin_event_type_EMWIN_EVENT_INPUT_MOUSE_BUTTON_ACTION: emwin_event_type = 8;
 #[doc = "< Mouse wheel was scrolled."]
-pub const emwin_event_type_EMWIN_EVENT_INPUT_MOUSE_WHEEL: emwin_event_type = 7;
+pub const emwin_event_type_EMWIN_EVENT_INPUT_MOUSE_WHEEL: emwin_event_type = 9;
 #[doc = "< Joystick was connected."]
-pub const emwin_event_type_EMWIN_EVENT_JOYSTICK_CONNECT: emwin_event_type = 8;
+pub const emwin_event_type_EMWIN_EVENT_JOYSTICK_CONNECT: emwin_event_type = 10;
 #[doc = "< Joystick was disconnected."]
-pub const emwin_event_type_EMWIN_EVENT_JOYSTICK_DISCONNECT: emwin_event_type = 9;
+pub const emwin_event_type_EMWIN_EVENT_JOYSTICK_DISCONNECT: emwin_event_type = 11;
 #[doc = " @brief Types of events generated by a desktop connection.\n\n Events are delivered through an event endpoint created with\n emwin_desktop_open_events()."]
 pub type emwin_event_type = ::std::os::raw::c_uint;
 #[doc = " @brief Event generated by a desktop connection.\n\n The data stored in the event union is determined by @ref type."]
@@ -2213,16 +2655,17 @@ pub struct emwin_desktop_event {
 #[derive(Copy, Clone)]
 pub union emwin_desktop_event__bindgen_ty_1 {
     pub window_close: emwin_desktop_event__bindgen_ty_1__bindgen_ty_1,
-    pub window_resize: emwin_desktop_event__bindgen_ty_1__bindgen_ty_2,
-    pub window_focus_gained: emwin_desktop_event__bindgen_ty_1__bindgen_ty_3,
-    pub window_focus_lost: emwin_desktop_event__bindgen_ty_1__bindgen_ty_4,
-    pub input_key_action: emwin_desktop_event__bindgen_ty_1__bindgen_ty_5,
-    pub text_input: emwin_desktop_event__bindgen_ty_1__bindgen_ty_6,
-    pub mouse_motion: emwin_desktop_event__bindgen_ty_1__bindgen_ty_7,
-    pub button_action: emwin_desktop_event__bindgen_ty_1__bindgen_ty_8,
-    pub mouse_wheel: emwin_desktop_event__bindgen_ty_1__bindgen_ty_9,
-    pub joystick_connect: emwin_desktop_event__bindgen_ty_1__bindgen_ty_10,
-    pub joystick_disconnect: emwin_desktop_event__bindgen_ty_1__bindgen_ty_11,
+    pub monitor_connect: emwin_desktop_event__bindgen_ty_1__bindgen_ty_2,
+    pub monitor_disconnect: emwin_desktop_event__bindgen_ty_1__bindgen_ty_3,
+    pub window_resize: emwin_desktop_event__bindgen_ty_1__bindgen_ty_4,
+    pub window_focus_gained: emwin_desktop_event__bindgen_ty_1__bindgen_ty_5,
+    pub window_focus_lost: emwin_desktop_event__bindgen_ty_1__bindgen_ty_6,
+    pub input_key_action: emwin_desktop_event__bindgen_ty_1__bindgen_ty_7,
+    pub mouse_motion: emwin_desktop_event__bindgen_ty_1__bindgen_ty_8,
+    pub button_action: emwin_desktop_event__bindgen_ty_1__bindgen_ty_9,
+    pub mouse_wheel: emwin_desktop_event__bindgen_ty_1__bindgen_ty_10,
+    pub joystick_connect: emwin_desktop_event__bindgen_ty_1__bindgen_ty_11,
+    pub joystick_disconnect: emwin_desktop_event__bindgen_ty_1__bindgen_ty_12,
 }
 #[doc = " @brief Data for EMWIN_EVENT_WINDOW_CLOSE.\n\n Contains the identifier of the window that requested closing."]
 #[repr(C)]
@@ -2240,58 +2683,90 @@ const _: () = {
     ["Offset of field: emwin_desktop_event__bindgen_ty_1__bindgen_ty_1::id"]
         [::std::mem::offset_of!(emwin_desktop_event__bindgen_ty_1__bindgen_ty_1, id) - 0usize];
 };
-#[doc = " @brief Data for EMWIN_EVENT_WINDOW_RESIZE.\n\n Contains the new window dimensions."]
+#[doc = " @brief Data for EMWIN_EVENT_MONITOR_CONNECT.\n\n Contains the identifier of the monitor that has been connected."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct emwin_desktop_event__bindgen_ty_1__bindgen_ty_2 {
-    #[doc = " @brief New window size in pixels."]
-    pub size: uvec2,
+    pub monitor: emwin_monitor,
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
     ["Size of emwin_desktop_event__bindgen_ty_1__bindgen_ty_2"]
-        [::std::mem::size_of::<emwin_desktop_event__bindgen_ty_1__bindgen_ty_2>() - 8usize];
+        [::std::mem::size_of::<emwin_desktop_event__bindgen_ty_1__bindgen_ty_2>() - 72usize];
     ["Alignment of emwin_desktop_event__bindgen_ty_1__bindgen_ty_2"]
-        [::std::mem::align_of::<emwin_desktop_event__bindgen_ty_1__bindgen_ty_2>() - 4usize];
-    ["Offset of field: emwin_desktop_event__bindgen_ty_1__bindgen_ty_2::size"]
-        [::std::mem::offset_of!(emwin_desktop_event__bindgen_ty_1__bindgen_ty_2, size) - 0usize];
+        [::std::mem::align_of::<emwin_desktop_event__bindgen_ty_1__bindgen_ty_2>() - 8usize];
+    ["Offset of field: emwin_desktop_event__bindgen_ty_1__bindgen_ty_2::monitor"]
+        [::std::mem::offset_of!(emwin_desktop_event__bindgen_ty_1__bindgen_ty_2, monitor) - 0usize];
 };
-#[doc = " @brief Data for EMWIN_EVENT_WINDOW_FOCUS_GAINED.\n\n Indicates the window received input focus."]
+#[doc = " @brief Data for EMWIN_EVENT_MONITOR_DISCONNECT.\n\n Contains the identifier of the monitor that has been disconnected."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct emwin_desktop_event__bindgen_ty_1__bindgen_ty_3 {
-    #[doc = " @brief Window identifier."]
-    pub id: emwin_window_id,
+    pub monitor: emwin_monitor,
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
     ["Size of emwin_desktop_event__bindgen_ty_1__bindgen_ty_3"]
-        [::std::mem::size_of::<emwin_desktop_event__bindgen_ty_1__bindgen_ty_3>() - 8usize];
+        [::std::mem::size_of::<emwin_desktop_event__bindgen_ty_1__bindgen_ty_3>() - 72usize];
     ["Alignment of emwin_desktop_event__bindgen_ty_1__bindgen_ty_3"]
         [::std::mem::align_of::<emwin_desktop_event__bindgen_ty_1__bindgen_ty_3>() - 8usize];
-    ["Offset of field: emwin_desktop_event__bindgen_ty_1__bindgen_ty_3::id"]
-        [::std::mem::offset_of!(emwin_desktop_event__bindgen_ty_1__bindgen_ty_3, id) - 0usize];
+    ["Offset of field: emwin_desktop_event__bindgen_ty_1__bindgen_ty_3::monitor"]
+        [::std::mem::offset_of!(emwin_desktop_event__bindgen_ty_1__bindgen_ty_3, monitor) - 0usize];
 };
-#[doc = " @brief Data for EMWIN_EVENT_WINDOW_FOCUS_LOST.\n\n Indicates the window lost input focus."]
+#[doc = " @brief Data for EMWIN_EVENT_WINDOW_RESIZE.\n\n Contains the new window dimensions."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct emwin_desktop_event__bindgen_ty_1__bindgen_ty_4 {
-    #[doc = " @brief Window identifier."]
-    pub id: emwin_window_id,
+    #[doc = " @brief New window size in pixels."]
+    pub size: uvec2,
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
     ["Size of emwin_desktop_event__bindgen_ty_1__bindgen_ty_4"]
         [::std::mem::size_of::<emwin_desktop_event__bindgen_ty_1__bindgen_ty_4>() - 8usize];
     ["Alignment of emwin_desktop_event__bindgen_ty_1__bindgen_ty_4"]
-        [::std::mem::align_of::<emwin_desktop_event__bindgen_ty_1__bindgen_ty_4>() - 8usize];
-    ["Offset of field: emwin_desktop_event__bindgen_ty_1__bindgen_ty_4::id"]
-        [::std::mem::offset_of!(emwin_desktop_event__bindgen_ty_1__bindgen_ty_4, id) - 0usize];
+        [::std::mem::align_of::<emwin_desktop_event__bindgen_ty_1__bindgen_ty_4>() - 4usize];
+    ["Offset of field: emwin_desktop_event__bindgen_ty_1__bindgen_ty_4::size"]
+        [::std::mem::offset_of!(emwin_desktop_event__bindgen_ty_1__bindgen_ty_4, size) - 0usize];
+};
+#[doc = " @brief Data for EMWIN_EVENT_WINDOW_FOCUS_GAINED.\n\n Indicates the window received input focus."]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct emwin_desktop_event__bindgen_ty_1__bindgen_ty_5 {
+    #[doc = " @brief Window identifier."]
+    pub id: emwin_window_id,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of emwin_desktop_event__bindgen_ty_1__bindgen_ty_5"]
+        [::std::mem::size_of::<emwin_desktop_event__bindgen_ty_1__bindgen_ty_5>() - 8usize];
+    ["Alignment of emwin_desktop_event__bindgen_ty_1__bindgen_ty_5"]
+        [::std::mem::align_of::<emwin_desktop_event__bindgen_ty_1__bindgen_ty_5>() - 8usize];
+    ["Offset of field: emwin_desktop_event__bindgen_ty_1__bindgen_ty_5::id"]
+        [::std::mem::offset_of!(emwin_desktop_event__bindgen_ty_1__bindgen_ty_5, id) - 0usize];
+};
+#[doc = " @brief Data for EMWIN_EVENT_WINDOW_FOCUS_LOST.\n\n Indicates the window lost input focus."]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct emwin_desktop_event__bindgen_ty_1__bindgen_ty_6 {
+    #[doc = " @brief Window identifier."]
+    pub id: emwin_window_id,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of emwin_desktop_event__bindgen_ty_1__bindgen_ty_6"]
+        [::std::mem::size_of::<emwin_desktop_event__bindgen_ty_1__bindgen_ty_6>() - 8usize];
+    ["Alignment of emwin_desktop_event__bindgen_ty_1__bindgen_ty_6"]
+        [::std::mem::align_of::<emwin_desktop_event__bindgen_ty_1__bindgen_ty_6>() - 8usize];
+    ["Offset of field: emwin_desktop_event__bindgen_ty_1__bindgen_ty_6::id"]
+        [::std::mem::offset_of!(emwin_desktop_event__bindgen_ty_1__bindgen_ty_6, id) - 0usize];
 };
 #[doc = " @brief Data for EMWIN_EVENT_INPUT_KEY_ACTION.\n\n Represents a keyboard key press or release."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
-pub struct emwin_desktop_event__bindgen_ty_1__bindgen_ty_5 {
+pub struct emwin_desktop_event__bindgen_ty_1__bindgen_ty_7 {
+    #[doc = " @brief Window identifier."]
+    pub id: emwin_window_id,
     #[doc = " @brief Key code."]
     pub key: emwin_key_code,
     #[doc = " @brief True if pressed, false if released."]
@@ -2299,53 +2774,47 @@ pub struct emwin_desktop_event__bindgen_ty_1__bindgen_ty_5 {
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of emwin_desktop_event__bindgen_ty_1__bindgen_ty_5"]
-        [::std::mem::size_of::<emwin_desktop_event__bindgen_ty_1__bindgen_ty_5>() - 8usize];
-    ["Alignment of emwin_desktop_event__bindgen_ty_1__bindgen_ty_5"]
-        [::std::mem::align_of::<emwin_desktop_event__bindgen_ty_1__bindgen_ty_5>() - 4usize];
-    ["Offset of field: emwin_desktop_event__bindgen_ty_1__bindgen_ty_5::key"]
-        [::std::mem::offset_of!(emwin_desktop_event__bindgen_ty_1__bindgen_ty_5, key) - 0usize];
-    ["Offset of field: emwin_desktop_event__bindgen_ty_1__bindgen_ty_5::pressed"]
-        [::std::mem::offset_of!(emwin_desktop_event__bindgen_ty_1__bindgen_ty_5, pressed) - 4usize];
-};
-#[doc = " @brief Data for EMWIN_EVENT_INPUT_TEXT_INPUT.\n\n Contains user-entered text after keyboard layout and input\n method processing."]
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct emwin_desktop_event__bindgen_ty_1__bindgen_ty_6 {
-    #[doc = " @brief UTF-8 encoded text input."]
-    pub text: [::std::os::raw::c_char; 32usize],
-}
-#[allow(clippy::unnecessary_operation, clippy::identity_op)]
-const _: () = {
-    ["Size of emwin_desktop_event__bindgen_ty_1__bindgen_ty_6"]
-        [::std::mem::size_of::<emwin_desktop_event__bindgen_ty_1__bindgen_ty_6>() - 32usize];
-    ["Alignment of emwin_desktop_event__bindgen_ty_1__bindgen_ty_6"]
-        [::std::mem::align_of::<emwin_desktop_event__bindgen_ty_1__bindgen_ty_6>() - 1usize];
-    ["Offset of field: emwin_desktop_event__bindgen_ty_1__bindgen_ty_6::text"]
-        [::std::mem::offset_of!(emwin_desktop_event__bindgen_ty_1__bindgen_ty_6, text) - 0usize];
+    ["Size of emwin_desktop_event__bindgen_ty_1__bindgen_ty_7"]
+        [::std::mem::size_of::<emwin_desktop_event__bindgen_ty_1__bindgen_ty_7>() - 16usize];
+    ["Alignment of emwin_desktop_event__bindgen_ty_1__bindgen_ty_7"]
+        [::std::mem::align_of::<emwin_desktop_event__bindgen_ty_1__bindgen_ty_7>() - 8usize];
+    ["Offset of field: emwin_desktop_event__bindgen_ty_1__bindgen_ty_7::id"]
+        [::std::mem::offset_of!(emwin_desktop_event__bindgen_ty_1__bindgen_ty_7, id) - 0usize];
+    ["Offset of field: emwin_desktop_event__bindgen_ty_1__bindgen_ty_7::key"]
+        [::std::mem::offset_of!(emwin_desktop_event__bindgen_ty_1__bindgen_ty_7, key) - 8usize];
+    ["Offset of field: emwin_desktop_event__bindgen_ty_1__bindgen_ty_7::pressed"][::std::mem::offset_of!(
+        emwin_desktop_event__bindgen_ty_1__bindgen_ty_7,
+        pressed
+    ) - 12usize];
 };
 #[doc = " @brief Data for EMWIN_EVENT_INPUT_MOUSE_MOTION.\n\n Contains relative mouse movement."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
-pub struct emwin_desktop_event__bindgen_ty_1__bindgen_ty_7 {
+pub struct emwin_desktop_event__bindgen_ty_1__bindgen_ty_8 {
+    #[doc = " @brief Window identifier."]
+    pub id: emwin_window_id,
     #[doc = " @brief Mouse movement delta."]
     pub delta_pos: uvec2,
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of emwin_desktop_event__bindgen_ty_1__bindgen_ty_7"]
-        [::std::mem::size_of::<emwin_desktop_event__bindgen_ty_1__bindgen_ty_7>() - 8usize];
-    ["Alignment of emwin_desktop_event__bindgen_ty_1__bindgen_ty_7"]
-        [::std::mem::align_of::<emwin_desktop_event__bindgen_ty_1__bindgen_ty_7>() - 4usize];
-    ["Offset of field: emwin_desktop_event__bindgen_ty_1__bindgen_ty_7::delta_pos"][::std::mem::offset_of!(
-        emwin_desktop_event__bindgen_ty_1__bindgen_ty_7,
+    ["Size of emwin_desktop_event__bindgen_ty_1__bindgen_ty_8"]
+        [::std::mem::size_of::<emwin_desktop_event__bindgen_ty_1__bindgen_ty_8>() - 16usize];
+    ["Alignment of emwin_desktop_event__bindgen_ty_1__bindgen_ty_8"]
+        [::std::mem::align_of::<emwin_desktop_event__bindgen_ty_1__bindgen_ty_8>() - 8usize];
+    ["Offset of field: emwin_desktop_event__bindgen_ty_1__bindgen_ty_8::id"]
+        [::std::mem::offset_of!(emwin_desktop_event__bindgen_ty_1__bindgen_ty_8, id) - 0usize];
+    ["Offset of field: emwin_desktop_event__bindgen_ty_1__bindgen_ty_8::delta_pos"][::std::mem::offset_of!(
+        emwin_desktop_event__bindgen_ty_1__bindgen_ty_8,
         delta_pos
-    ) - 0usize];
+    ) - 8usize];
 };
 #[doc = " @brief Data for EMWIN_EVENT_INPUT_MOUSE_BUTTON_ACTION.\n\n Represents a mouse button press or release."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
-pub struct emwin_desktop_event__bindgen_ty_1__bindgen_ty_8 {
+pub struct emwin_desktop_event__bindgen_ty_1__bindgen_ty_9 {
+    #[doc = " @brief Window identifier."]
+    pub id: emwin_window_id,
     #[doc = " @brief Mouse button code."]
     pub button: emwin_mouse_code,
     #[doc = " True if pressed, false if released."]
@@ -2353,54 +2822,46 @@ pub struct emwin_desktop_event__bindgen_ty_1__bindgen_ty_8 {
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of emwin_desktop_event__bindgen_ty_1__bindgen_ty_8"]
-        [::std::mem::size_of::<emwin_desktop_event__bindgen_ty_1__bindgen_ty_8>() - 8usize];
-    ["Alignment of emwin_desktop_event__bindgen_ty_1__bindgen_ty_8"]
-        [::std::mem::align_of::<emwin_desktop_event__bindgen_ty_1__bindgen_ty_8>() - 4usize];
-    ["Offset of field: emwin_desktop_event__bindgen_ty_1__bindgen_ty_8::button"]
-        [::std::mem::offset_of!(emwin_desktop_event__bindgen_ty_1__bindgen_ty_8, button) - 0usize];
-    ["Offset of field: emwin_desktop_event__bindgen_ty_1__bindgen_ty_8::pressed"]
-        [::std::mem::offset_of!(emwin_desktop_event__bindgen_ty_1__bindgen_ty_8, pressed) - 4usize];
+    ["Size of emwin_desktop_event__bindgen_ty_1__bindgen_ty_9"]
+        [::std::mem::size_of::<emwin_desktop_event__bindgen_ty_1__bindgen_ty_9>() - 16usize];
+    ["Alignment of emwin_desktop_event__bindgen_ty_1__bindgen_ty_9"]
+        [::std::mem::align_of::<emwin_desktop_event__bindgen_ty_1__bindgen_ty_9>() - 8usize];
+    ["Offset of field: emwin_desktop_event__bindgen_ty_1__bindgen_ty_9::id"]
+        [::std::mem::offset_of!(emwin_desktop_event__bindgen_ty_1__bindgen_ty_9, id) - 0usize];
+    ["Offset of field: emwin_desktop_event__bindgen_ty_1__bindgen_ty_9::button"]
+        [::std::mem::offset_of!(emwin_desktop_event__bindgen_ty_1__bindgen_ty_9, button) - 8usize];
+    ["Offset of field: emwin_desktop_event__bindgen_ty_1__bindgen_ty_9::pressed"][::std::mem::offset_of!(
+        emwin_desktop_event__bindgen_ty_1__bindgen_ty_9,
+        pressed
+    ) - 12usize];
 };
 #[doc = " @brief Data for EMWIN_EVENT_INPUT_MOUSE_WHEEL.\n\n Contains scroll movement."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
-pub struct emwin_desktop_event__bindgen_ty_1__bindgen_ty_9 {
+pub struct emwin_desktop_event__bindgen_ty_1__bindgen_ty_10 {
+    #[doc = " @brief Window identifier."]
+    pub id: emwin_window_id,
     #[doc = " @brief Scroll delta."]
     pub delta_scroll: vec2,
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of emwin_desktop_event__bindgen_ty_1__bindgen_ty_9"]
-        [::std::mem::size_of::<emwin_desktop_event__bindgen_ty_1__bindgen_ty_9>() - 8usize];
-    ["Alignment of emwin_desktop_event__bindgen_ty_1__bindgen_ty_9"]
-        [::std::mem::align_of::<emwin_desktop_event__bindgen_ty_1__bindgen_ty_9>() - 4usize];
-    ["Offset of field: emwin_desktop_event__bindgen_ty_1__bindgen_ty_9::delta_scroll"][::std::mem::offset_of!(
-        emwin_desktop_event__bindgen_ty_1__bindgen_ty_9,
-        delta_scroll
-    ) - 0usize];
-};
-#[doc = " @brief Data for EMWIN_EVENT_JOYSTICK_CONNECT.\n\n Indicates a joystick became available."]
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct emwin_desktop_event__bindgen_ty_1__bindgen_ty_10 {
-    #[doc = " @brief Connected joystick identifier."]
-    pub id: emwin_joystick_id,
-}
-#[allow(clippy::unnecessary_operation, clippy::identity_op)]
-const _: () = {
     ["Size of emwin_desktop_event__bindgen_ty_1__bindgen_ty_10"]
-        [::std::mem::size_of::<emwin_desktop_event__bindgen_ty_1__bindgen_ty_10>() - 8usize];
+        [::std::mem::size_of::<emwin_desktop_event__bindgen_ty_1__bindgen_ty_10>() - 16usize];
     ["Alignment of emwin_desktop_event__bindgen_ty_1__bindgen_ty_10"]
         [::std::mem::align_of::<emwin_desktop_event__bindgen_ty_1__bindgen_ty_10>() - 8usize];
     ["Offset of field: emwin_desktop_event__bindgen_ty_1__bindgen_ty_10::id"]
         [::std::mem::offset_of!(emwin_desktop_event__bindgen_ty_1__bindgen_ty_10, id) - 0usize];
+    ["Offset of field: emwin_desktop_event__bindgen_ty_1__bindgen_ty_10::delta_scroll"][::std::mem::offset_of!(
+        emwin_desktop_event__bindgen_ty_1__bindgen_ty_10,
+        delta_scroll
+    ) - 8usize];
 };
-#[doc = " @brief Data for EMWIN_EVENT_JOYSTICK_DISCONNECT.\n\n Indicates a joystick was removed."]
+#[doc = " @brief Data for EMWIN_EVENT_JOYSTICK_CONNECT.\n\n Indicates a joystick became available."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct emwin_desktop_event__bindgen_ty_1__bindgen_ty_11 {
-    #[doc = " @brief Disconnected joystick identifier."]
+    #[doc = " @brief Connected joystick identifier."]
     pub id: emwin_joystick_id,
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
@@ -2412,14 +2873,34 @@ const _: () = {
     ["Offset of field: emwin_desktop_event__bindgen_ty_1__bindgen_ty_11::id"]
         [::std::mem::offset_of!(emwin_desktop_event__bindgen_ty_1__bindgen_ty_11, id) - 0usize];
 };
+#[doc = " @brief Data for EMWIN_EVENT_JOYSTICK_DISCONNECT.\n\n Indicates a joystick was removed."]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct emwin_desktop_event__bindgen_ty_1__bindgen_ty_12 {
+    #[doc = " @brief Disconnected joystick identifier."]
+    pub id: emwin_joystick_id,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of emwin_desktop_event__bindgen_ty_1__bindgen_ty_12"]
+        [::std::mem::size_of::<emwin_desktop_event__bindgen_ty_1__bindgen_ty_12>() - 8usize];
+    ["Alignment of emwin_desktop_event__bindgen_ty_1__bindgen_ty_12"]
+        [::std::mem::align_of::<emwin_desktop_event__bindgen_ty_1__bindgen_ty_12>() - 8usize];
+    ["Offset of field: emwin_desktop_event__bindgen_ty_1__bindgen_ty_12::id"]
+        [::std::mem::offset_of!(emwin_desktop_event__bindgen_ty_1__bindgen_ty_12, id) - 0usize];
+};
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
     ["Size of emwin_desktop_event__bindgen_ty_1"]
-        [::std::mem::size_of::<emwin_desktop_event__bindgen_ty_1>() - 32usize];
+        [::std::mem::size_of::<emwin_desktop_event__bindgen_ty_1>() - 72usize];
     ["Alignment of emwin_desktop_event__bindgen_ty_1"]
         [::std::mem::align_of::<emwin_desktop_event__bindgen_ty_1>() - 8usize];
     ["Offset of field: emwin_desktop_event__bindgen_ty_1::window_close"]
         [::std::mem::offset_of!(emwin_desktop_event__bindgen_ty_1, window_close) - 0usize];
+    ["Offset of field: emwin_desktop_event__bindgen_ty_1::monitor_connect"]
+        [::std::mem::offset_of!(emwin_desktop_event__bindgen_ty_1, monitor_connect) - 0usize];
+    ["Offset of field: emwin_desktop_event__bindgen_ty_1::monitor_disconnect"]
+        [::std::mem::offset_of!(emwin_desktop_event__bindgen_ty_1, monitor_disconnect) - 0usize];
     ["Offset of field: emwin_desktop_event__bindgen_ty_1::window_resize"]
         [::std::mem::offset_of!(emwin_desktop_event__bindgen_ty_1, window_resize) - 0usize];
     ["Offset of field: emwin_desktop_event__bindgen_ty_1::window_focus_gained"]
@@ -2428,8 +2909,6 @@ const _: () = {
         [::std::mem::offset_of!(emwin_desktop_event__bindgen_ty_1, window_focus_lost) - 0usize];
     ["Offset of field: emwin_desktop_event__bindgen_ty_1::input_key_action"]
         [::std::mem::offset_of!(emwin_desktop_event__bindgen_ty_1, input_key_action) - 0usize];
-    ["Offset of field: emwin_desktop_event__bindgen_ty_1::text_input"]
-        [::std::mem::offset_of!(emwin_desktop_event__bindgen_ty_1, text_input) - 0usize];
     ["Offset of field: emwin_desktop_event__bindgen_ty_1::mouse_motion"]
         [::std::mem::offset_of!(emwin_desktop_event__bindgen_ty_1, mouse_motion) - 0usize];
     ["Offset of field: emwin_desktop_event__bindgen_ty_1::button_action"]
@@ -2443,7 +2922,7 @@ const _: () = {
 };
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of emwin_desktop_event"][::std::mem::size_of::<emwin_desktop_event>() - 40usize];
+    ["Size of emwin_desktop_event"][::std::mem::size_of::<emwin_desktop_event>() - 80usize];
     ["Alignment of emwin_desktop_event"][::std::mem::align_of::<emwin_desktop_event>() - 8usize];
     ["Offset of field: emwin_desktop_event::type_"]
         [::std::mem::offset_of!(emwin_desktop_event, type_) - 0usize];

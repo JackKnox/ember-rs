@@ -2,7 +2,6 @@ use crate::core::{Allocator, Result};
 use ffi;
 
 use std::ffi::CStr;
-use std::path::PathBuf;
 
 use bitflags::bitflags;
 
@@ -117,58 +116,6 @@ impl Window {
     pub fn title(&self) -> &str {
         unsafe { CStr::from_ptr(self.sys.title).to_str().unwrap() }
     }
-}
-
-#[derive(Debug, Clone, Copy)]
-pub enum PopupType {
-    Info,
-    Warning,
-    Error,
-    Question,
-}
-
-pub fn dialog_notify(title: &str, message: &str, popup_type: PopupType) -> Result<()> {
-    todo!()
-}
-
-pub fn dialog_option(
-    title: &str,
-    message: &str,
-    options: &[&str],
-    popup_type: PopupType,
-) -> Result<usize> {
-    todo!()
-}
-
-pub fn dialog_input(title: &str, message: &str, max_size: u32, hide_text: bool) -> Result<String> {
-    todo!()
-}
-
-pub fn dialog_save_file(
-    title: &str,
-    patterns: &[&str],
-    max_size: u32,
-    default_path: &str,
-) -> Result<PathBuf> {
-    todo!()
-}
-
-pub fn dialog_open_file(
-    title: &str,
-    patterns: &[&str],
-    max_size: u32,
-    default_path: &str,
-    multiple_files: bool,
-) -> Result<Vec<PathBuf>> {
-    todo!()
-}
-
-pub fn dialog_open_folder(title: &str, max_size: u32, default_path: &str) -> Result<PathBuf> {
-    todo!()
-}
-
-pub fn dialog_colour(title: &str, default_color: u32) -> Result<u32> {
-    todo!()
 }
 
 #[repr(u32)]
