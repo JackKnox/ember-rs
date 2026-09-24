@@ -1,5 +1,5 @@
 use crate::core::{Allocator, Result, Version};
-use ffi;
+use crate::ffi;
 
 use bitflags::bitflags;
 

@@ -3,7 +3,7 @@ fn main() {
 
     let bindings = bindgen::Builder::default()
         .header("wrapper.h")
-        .clang_arg("-I../vendor/c-api/protocol/")
+        .clang_arg("-Ivendor/c-api/protocol/")
         .allowlist_function("em.*")
         .allowlist_type("em.*")
         .allowlist_var("EM.*")
@@ -11,5 +11,5 @@ fn main() {
         .generate()
         .unwrap();
 
-    bindings.write_to_file("src/bindings.rs").unwrap();
+    bindings.write_to_file("src/ffi.rs").unwrap();
 }

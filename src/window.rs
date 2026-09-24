@@ -1,5 +1,5 @@
 use crate::core::{Allocator, Result};
-use ffi;
+use crate::ffi;
 
 use std::ffi::CStr;
 
