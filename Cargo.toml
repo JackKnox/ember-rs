@@ -2,8 +2,11 @@
 name = "ember-rs"
 version = "0.6.0"
 edition = "2024"
-license = "MIT"
 build = "build.rs"
+
+description = "A safe, ergonomic Rust interface for The Ember Protocol."
+license = "MIT"
+repository = "https://github.com/JackKnox/ember-rs"
 
 [dependencies]
 bitflags = "2.13.1"
