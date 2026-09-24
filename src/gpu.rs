@@ -87,7 +87,6 @@ impl Device {
         if result != ffi::em_result_EMBER_RESULT_OK {
             return Err(result.into());
         }
-
         Ok(device)
     }
 

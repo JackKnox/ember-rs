@@ -1,7 +1,8 @@
 use crate::core::{Allocator, Result};
 use crate::ffi;
+use crate::ffi::emwin_window_config__bindgen_ty_1;
 
-use std::ffi::CStr;
+use std::ffi::{CStr, CString};
 
 use bitflags::bitflags;
 
@@ -41,12 +42,16 @@ pub enum WindowPosition {
     Centered,
 }
 
+#[repr(u32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd)]
 pub enum WindowMode {
     Windowed,
     Maximized,
     Fullscreen,
 }
 
+#[repr(u32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd)]
 pub enum CursorMode {
     Normal,
     Hidden,
@@ -96,12 +101,59 @@ impl<'a> Default for WindowConfig<'a> {
 }
 
 impl Window {
-    pub fn open(allocator: &Allocator, config: &WindowConfig) -> Result<(Window, Desktop)> {
-        todo!()
+    pub fn open(allocator: &mut Allocator, config: &WindowConfig) -> Result<(Window, Desktop)> {
+        let title = CString::new(config.title.clone())
+            .expect("Window title contained a NULL byte");
+
+        let c_config = ffi::emwin_window_config {
+            window_mode: config.window_mode as u32,
+            cursor_mode: config.cursor_mode as u32,
+            flags: config.flags.bits(),
+            title: title.as_ptr(),
+            min_size: ffi::uvec2 { x: config.min_size[0], y: config.min_size[1] },
+            max_size: ffi::uvec2 { x: config.max_size[0], y: config.max_size[1] },
+            size: ffi::uvec2 { x: config.size[0], y: config.size[1] },
+            __bindgen_anon_1: match config.position {
+                WindowPosition::Absolute(pos) => {
+                    emwin_window_config__bindgen_ty_1 {
+                        absolute_pos: ffi::uvec2 { x: pos[0], y: pos[1] },
+                    }
+                }
+
+                WindowPosition::Centered => {
+                    emwin_window_config__bindgen_ty_1 {
+                        centered_pos: true,
+                    }
+                }
+            },
+        };
+        let mut window = Window { 
+            sys: unsafe { std::mem::zeroed() }
+        };
+        let mut desktop = Desktop { 
+            sys: unsafe { std::mem::zeroed() } 
+        };
+        let result = unsafe {
+            ffi::emwin_window_open(
+                &mut allocator.sys as *mut ffi::em_allocator, 
+                &c_config as *const ffi::emwin_window_config, 
+                0, 
+                &mut window.sys as *mut ffi::emwin_window, 
+                &mut desktop.sys as *mut *mut ffi::emwin_desktop)
+        };
+
+        if result != ffi::em_result_EMBER_RESULT_OK {
+            return Err(result.into());
+        }
+        Ok((window, desktop))
     }
 
-    pub fn close(&mut self, allocator: &Allocator) {
-        todo!()
+    pub fn close(&mut self, allocator: &mut Allocator) {
+        unsafe { 
+            ffi::emwin_window_close(
+                &mut allocator.sys as *mut ffi::em_allocator, 
+                &mut self.sys as *mut ffi::emwin_window);
+        }
     }
 
     pub fn request_close(&mut self) {
