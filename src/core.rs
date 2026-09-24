@@ -7,7 +7,7 @@ pub struct Allocator {
 }
 
 impl Allocator {
-    fn system() -> Allocator {
+    pub fn system() -> Allocator {
         unsafe { Allocator { sys: ffi::emplat_system_allocator() } }
     }
 }
