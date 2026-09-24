@@ -6,6 +6,12 @@ pub struct Allocator {
     pub sys: ffi::em_allocator,
 }
 
+impl Allocator {
+    fn system() -> Allocator {
+        unsafe { Allocator { sys: ffi::emplat_system_allocator() } }
+    }
+}
+
 #[derive(Debug)]
 pub enum Error {
     Timeout,
