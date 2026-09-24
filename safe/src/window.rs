@@ -27,7 +27,7 @@ pub enum DesktopEvent {
     JoystickDisconnect(JoystickId),
 }
 
-impl Desktop {   
+impl Desktop {
     pub fn poll_events(&mut self) -> Option<DesktopEvent> {
         todo!()
     }
@@ -43,11 +43,15 @@ pub enum WindowPosition {
 }
 
 pub enum WindowMode {
-    Windowed, Maximized, Fullscreen,
+    Windowed,
+    Maximized,
+    Fullscreen,
 }
 
 pub enum CursorMode {
-    Normal, Hidden, Disabled,
+    Normal,
+    Hidden,
+    Disabled,
 }
 
 bitflags! {
@@ -69,7 +73,7 @@ pub struct WindowConfig<'a> {
     pub min_size: [u32; 2],
     pub max_size: [u32; 2],
     pub size: [u32; 2],
-    pub desktop: Option<&'a Desktop>
+    pub desktop: Option<&'a Desktop>,
 }
 
 pub struct Window {
@@ -90,7 +94,9 @@ impl Window {
     }
 
     pub fn set_visible(&mut self, visible: bool) {
-        unsafe { ffi::emwin_window_set_visible(&mut self.sys as *mut ffi::emwin_window, visible); }
+        unsafe {
+            ffi::emwin_window_set_visible(&mut self.sys as *mut ffi::emwin_window, visible);
+        }
     }
 
     pub fn visible(&self) -> bool {
@@ -99,7 +105,7 @@ impl Window {
 
     #[inline]
     pub fn size(&self) -> [u32; 2] {
-        [ self.sys.size.x, self.sys.size.y ]
+        [self.sys.size.x, self.sys.size.y]
     }
 
     #[inline]
@@ -109,11 +115,7 @@ impl Window {
 
     #[inline]
     pub fn title(&self) -> &str {
-        unsafe {
-            CStr::from_ptr(self.sys.title)
-                .to_str()
-                .unwrap()
-        }
+        unsafe { CStr::from_ptr(self.sys.title).to_str().unwrap() }
     }
 }
 
@@ -125,34 +127,29 @@ pub enum PopupType {
     Question,
 }
 
-pub fn dialog_notify(
-    title: &str,
-    message: &str, 
-    popup_type: PopupType) -> Result<()> {
+pub fn dialog_notify(title: &str, message: &str, popup_type: PopupType) -> Result<()> {
     todo!()
 }
 
 pub fn dialog_option(
     title: &str,
-    message: &str, 
-    options: &[&str], 
-    popup_type: PopupType) -> Result<usize> {
+    message: &str,
+    options: &[&str],
+    popup_type: PopupType,
+) -> Result<usize> {
     todo!()
 }
 
-pub fn dialog_input(
-    title: &str, 
-    message: &str, 
-    max_size: u32, 
-    hide_text: bool) -> Result<String> {
+pub fn dialog_input(title: &str, message: &str, max_size: u32, hide_text: bool) -> Result<String> {
     todo!()
 }
 
 pub fn dialog_save_file(
     title: &str,
     patterns: &[&str],
-    max_size: u32, 
-    default_path: &str) -> Result<PathBuf> {
+    max_size: u32,
+    default_path: &str,
+) -> Result<PathBuf> {
     todo!()
 }
 
@@ -161,20 +158,16 @@ pub fn dialog_open_file(
     patterns: &[&str],
     max_size: u32,
     default_path: &str,
-    multiple_files: bool) -> Result<Vec<PathBuf>> {
+    multiple_files: bool,
+) -> Result<Vec<PathBuf>> {
     todo!()
 }
 
-pub fn dialog_open_folder(
-    title: &str,
-    max_size: u32,
-    default_path: &str) -> Result<PathBuf> {
+pub fn dialog_open_folder(title: &str, max_size: u32, default_path: &str) -> Result<PathBuf> {
     todo!()
 }
 
-pub fn dialog_colour(
-    title: &str,
-    default_color: u32) -> Result<u32> {
+pub fn dialog_colour(title: &str, default_color: u32) -> Result<u32> {
     todo!()
 }
 
@@ -304,7 +297,7 @@ pub enum KeyCode {
 }
 
 pub enum MouseCode {
-    Left, 
+    Left,
     Right,
     Middle,
 }

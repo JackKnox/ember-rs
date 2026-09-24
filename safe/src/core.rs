@@ -1,16 +1,15 @@
 use ffi;
 
-use std::fmt;
 use std::alloc::{GlobalAlloc, Layout};
+use std::fmt;
 
 pub struct Allocator {
-    sys: ffi::em_allocator,
+    pub sys: ffi::em_allocator,
 }
 
 unsafe impl GlobalAlloc for Allocator {
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
-        let alloc = self.sys.alloc
-            .expect("Invalid ember allocator used");
+        let alloc = self.sys.alloc.expect("Invalid ember allocator used");
 
         unsafe {
             alloc(
@@ -22,8 +21,7 @@ unsafe impl GlobalAlloc for Allocator {
     }
 
     unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout) {
-        let free = self.sys.free
-            .expect("Invalid ember allocator used");
+        let free = self.sys.free.expect("Invalid ember allocator used");
 
         unsafe {
             free(
@@ -35,7 +33,6 @@ unsafe impl GlobalAlloc for Allocator {
         }
     }
 }
-
 
 #[derive(Debug)]
 pub enum Error {
@@ -58,18 +55,29 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Error::Timeout => write!(f, "Operation timed out before completion"),
-            Error::Uninitilalized => write!(f, "The system, device, or resource was not initialized"),
+            Error::Uninitilalized => {
+                write!(f, "The system, device, or resource was not initialized")
+            }
             Error::InvalidEnum => write!(f, "An invalid enum value was provided"),
-            Error::InvalidValue => write!(f, "An invalid value was provided (out of expected range)"),
+            Error::InvalidValue => {
+                write!(f, "An invalid value was provided (out of expected range)")
+            }
             Error::UnsupportedFormat => write!(f, "The requested format or type is not supported"),
             Error::OutOfMemoryCPU => write!(f, "CPU memory allocation failed"),
             Error::OutOfMemoryGPU => write!(f, "GPU memory allocation failed"),
             Error::UnavailableAPI => write!(f, "The requested API is not available on this device"),
-            Error::Unimplemented => write!(f, "The requested feature or function is not implemented"),
+            Error::Unimplemented => {
+                write!(f, "The requested feature or function is not implemented")
+            }
             Error::ValidationFailed => write!(f, "Input or operation validation failed"),
             Error::InUse => write!(f, "The resource is currently in use and cannot be accessed"),
-            Error::PermissionDenied => write!(f, "The caller does not have the required permissions"),
-            Error::Unknown => write!(f, "An unknown error has occurred; either the application has provided invalid input, or an implementation failure has occurred"),
+            Error::PermissionDenied => {
+                write!(f, "The caller does not have the required permissions")
+            }
+            Error::Unknown => write!(
+                f,
+                "An unknown error has occurred; either the application has provided invalid input, or an implementation failure has occurred"
+            ),
         }
     }
 }
@@ -87,11 +95,7 @@ impl Version {
         assert!(minor <= 0x3FF, "minor exceeds 10 bits");
         assert!(patch <= 0xFFF, "patch exceeds 12 bits");
 
-        Self(
-            (major << 22)
-                | (minor << 12)
-                | patch,
-        )
+        Self((major << 22) | (minor << 12) | patch)
     }
 
     pub const fn major(self) -> u32 {

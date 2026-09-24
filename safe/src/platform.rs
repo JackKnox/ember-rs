@@ -1,8 +1,8 @@
 use ffi;
 
-use crate::core::{Allocator, Version, Result};
+use crate::core::{Allocator, Result, Version};
 
-use std::io::{Read, Write, Seek};
+use std::io::{Read, Seek, Write};
 use std::path::PathBuf;
 
 use bitflags::bitflags;
@@ -25,42 +25,24 @@ impl File {
         todo!()
     }
 
-    pub fn info(filepath: &str) -> FileInfo {
+    pub fn info(filepath: &str) -> FileInfo {}
 
-    }
-    
-    pub fn size(&self) -> u64 {
+    pub fn size(&self) -> u64 {}
 
-    }
+    pub fn lock(&mut self) -> Result<()> {}
 
-    pub fn lock(&mut self) -> Result<()> {
+    pub fn unlock(&mut self) -> Result<()> {}
 
-    }
-
-    pub fn unlock(&mut self) -> Result<()> {
-
-    }
-
-    pub fn write_safe(&mut self, buffer: &[u8]) -> Result<usize> {
-
-    }
+    pub fn write_safe(&mut self, buffer: &[u8]) -> Result<usize> {}
 }
 
-impl Drop for File {
+impl Drop for File {}
 
-}
+impl Read for File {}
 
-impl Read for File {
+impl Write for File {}
 
-}
-
-impl Write for File {
-
-}
-
-impl Seek for File {
-
-}
+impl Seek for File {}
 
 pub enum FileWatchEvent {
     Created(PathBuf),
@@ -74,23 +56,13 @@ pub struct FileWatcher {
 }
 
 impl FileWatcher {
-    pub fn create() -> Result<FileWatcher> {
+    pub fn create() -> Result<FileWatcher> {}
 
-    }
+    pub fn add(&mut self, filepath: &[&PathBuf]) -> Result<()> {}
 
-    pub fn add(&mut self, filepath: &[&PathBuf]) -> Result<()> {
+    pub fn add_pattern(&mut self, pattern: &str) -> Result<()> {}
 
-    }
-
-    pub fn add_pattern(&mut self, pattern: &str) -> Result<()> {
-
-    }
-
-    pub fn poll_files(&mut self) -> Option<FileWatchEvent> {
-
-    }
+    pub fn poll_files(&mut self) -> Option<FileWatchEvent> {}
 }
 
-impl Drop for FileWatcher {
-
-}
+impl Drop for FileWatcher {}
