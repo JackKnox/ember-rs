@@ -79,6 +79,22 @@ pub struct Window {
     sys: ffi::emwin_window,
 }
 
+impl<'a> Default for WindowConfig<'a> {
+    fn default() -> Self {
+        WindowConfig {
+            window_mode: WindowMode::Windowed,
+            cursor_mode: CursorMode::Normal,
+            flags: WindowFlags::empty(),
+            title: String::new(),
+            position: WindowPosition::Centered,
+            min_size: [ 0, 0 ],
+            max_size: [ 0, 0 ],
+            size: [ 100, 100 ],
+            desktop: None,
+        }
+    }
+}
+
 impl Window {
     pub fn open(allocator: &Allocator, config: &WindowConfig) -> Result<(Window, Desktop)> {
         todo!()
