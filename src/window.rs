@@ -135,7 +135,7 @@ impl Window {
         };
         let result = unsafe {
             ffi::emwin_window_open(
-                &mut allocator.sys as *mut ffi::em_allocator, 
+                allocator.sys.get() as *mut ffi::em_allocator, 
                 &c_config as *const ffi::emwin_window_config, 
                 0, 
                 &mut window.sys as *mut ffi::emwin_window, 
@@ -151,7 +151,7 @@ impl Window {
     pub fn close(&mut self, allocator: &mut Allocator) {
         unsafe { 
             ffi::emwin_window_close(
-                &mut allocator.sys as *mut ffi::em_allocator, 
+                allocator.sys.get() as *mut ffi::em_allocator, 
                 &mut self.sys as *mut ffi::emwin_window);
         }
     }

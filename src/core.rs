@@ -1,14 +1,15 @@
 use crate::ffi;
 
 use std::fmt;
+use std::cell::UnsafeCell;
 
 pub struct Allocator {
-    pub sys: ffi::em_allocator,
+    pub sys: UnsafeCell<ffi::em_allocator>,
 }
 
 impl Allocator {
     pub fn system() -> Allocator {
-        unsafe { Allocator { sys: ffi::emplat_system_allocator() } }
+        unsafe { Allocator { sys: UnsafeCell::new(ffi::emplat_system_allocator()) } }
     }
 }
 

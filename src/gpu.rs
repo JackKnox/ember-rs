@@ -58,14 +58,14 @@ pub struct CommandBuffer {
 }
 
 impl Device {
-    pub fn init(allocator: &mut Allocator, config: &DeviceConfig) -> Result<Device> {
+    pub fn init(allocator: &Allocator, config: &DeviceConfig) -> Result<Device> {
         let debug_name = CString::new(config.debug_name.clone())
             .expect("Device debug name contained a NULL byte");
 
         let c_config = ffi::emgpu_device_config {
             api_next: std::ptr::null_mut(),
             debug_name: debug_name.as_ptr(),
-            frame_allocator: config.frame_allocator.sys,
+            frame_allocator: unsafe { *config.frame_allocator.sys.get() },
             app_version: config.app_version.into(),
             required_modes: config.required_modes.bits(),
             optional_modes: config.optional_modes.bits(),
@@ -78,7 +78,7 @@ impl Device {
         };
         let result = unsafe {
             ffi::emgpu_device_init(
-                &mut allocator.sys as *mut ffi::em_allocator,
+                allocator.sys.get() as *mut ffi::em_allocator,
                 &c_config as *const ffi::emgpu_device_config,
                 &mut device.sys as *mut ffi::emgpu_device,
             )
@@ -91,10 +91,14 @@ impl Device {
     }
 
     pub fn shutdown(&mut self, allocator: &Allocator) {
-        todo!()
+        unsafe { 
+            ffi::emgpu_device_shutdown(
+                allocator.sys.get() as *mut ffi::em_allocator, 
+                &mut self.sys as *mut ffi::emgpu_device);
+        }
     }
 
-    pub fn capabilities(&self) -> DeviceCapabilities {
+    pub fn capabilities(&self) -> DeviceCapabilities<'_> {
         todo!()
     }
 
