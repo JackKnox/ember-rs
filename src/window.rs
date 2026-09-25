@@ -101,7 +101,7 @@ impl<'a> Default for WindowConfig<'a> {
 }
 
 impl Window {
-    pub fn open(allocator: &mut Allocator, config: &WindowConfig) -> Result<(Window, Desktop)> {
+    pub fn open(allocator: &Allocator, config: &WindowConfig) -> Result<(Window, Desktop)> {
         let title = CString::new(config.title.clone())
             .expect("Window title contained a NULL byte");
 
@@ -148,7 +148,7 @@ impl Window {
         Ok((window, desktop))
     }
 
-    pub fn close(&mut self, allocator: &mut Allocator) {
+    pub fn close(&mut self, allocator: &Allocator) {
         unsafe { 
             ffi::emwin_window_close(
                 allocator.sys.get() as *mut ffi::em_allocator, 
