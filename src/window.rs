@@ -10,11 +10,25 @@ pub struct Desktop {
     sys: *mut ffi::emwin_desktop,
 }
 
+pub struct Monitor {
+    id: MontiorId,
+}
+
+impl From<ffi::emwin_monitor> for Monitor {
+    fn from(value: ffi::emwin_monitor) -> Self {
+        Monitor { id: value.id.into() }
+    }
+}
+
 pub struct WindowId(u64);
+
+pub struct MontiorId(u64);
 
 pub struct JoystickId(u64);
 
 pub enum DesktopEvent {
+    MonitorConnect(Monitor),
+    MonitorDisconnect(Monitor),
     WindowClose(WindowId),
     WindowResize(WindowId, [u32; 2]),
     WindowFocusGained(WindowId),
@@ -27,11 +41,134 @@ pub enum DesktopEvent {
     JoystickDisconnect(JoystickId),
 }
 
-impl Desktop {
-    pub fn poll_events(&mut self) -> Option<DesktopEvent> {
-        todo!()
+impl From<u64> for WindowId {
+    fn from(value: u64) -> Self {
+        WindowId(value)
     }
+}
 
+impl From<u64> for MontiorId {
+    fn from(value: u64) -> Self {
+        MontiorId(value)
+    }
+}
+
+impl From<u64> for JoystickId {
+    fn from(value: u64) -> Self {
+        JoystickId(value)
+    }
+}
+
+impl Desktop {
+    pub fn poll_events(&mut self) -> Result<DesktopEvent> {
+        let mut event = unsafe { ffi::emwin_desktop_event { ..std::mem::zeroed() } };
+
+        let result = unsafe {
+            ffi::emwin_poll_events(
+                self.sys,
+                &mut event as *mut ffi::emwin_desktop_event,
+            )
+        };
+
+        if result != ffi::em_result_EMBER_RESULT_OK {
+            return Err(result.into());
+        }
+
+        Ok(unsafe {
+            match event.type_ {
+                ffi::emwin_event_type_EMWIN_EVENT_MONITOR_CONNECT => {
+                    DesktopEvent::MonitorConnect(
+                        event.__bindgen_anon_1.monitor_connect.monitor.into()
+                    )
+                }
+
+                ffi::emwin_event_type_EMWIN_EVENT_MONITOR_DISCONNECT => {
+                    DesktopEvent::MonitorDisconnect(
+                        event.__bindgen_anon_1.monitor_disconnect.monitor.into()
+                    )
+                }
+
+                ffi::emwin_event_type_EMWIN_EVENT_WINDOW_CLOSE => {
+                    DesktopEvent::WindowClose(
+                        event.__bindgen_anon_1.window_close.id.into()
+                    )
+                }
+
+                ffi::emwin_event_type_EMWIN_EVENT_WINDOW_RESIZE => {
+                    let size = event.__bindgen_anon_1.window_resize.size;
+
+                    DesktopEvent::WindowResize(
+                        event.__bindgen_anon_1.window_resize.id.into(),
+                        [size.x, size.y],
+                    )
+                }
+
+                ffi::emwin_event_type_EMWIN_EVENT_WINDOW_FOCUS_GAINED => {
+                    DesktopEvent::WindowFocusGained(
+                        event.__bindgen_anon_1.window_focus_gained.id.into()
+                    )
+                }
+
+                ffi::emwin_event_type_EMWIN_EVENT_WINDOW_FOCUS_LOST => {
+                    DesktopEvent::WindowFocusLost(
+                        event.__bindgen_anon_1.window_focus_lost.id.into()
+                    )
+                }
+
+                ffi::emwin_event_type_EMWIN_EVENT_INPUT_KEY_ACTION => {
+                    let data = event.__bindgen_anon_1.input_key_action;
+
+                    DesktopEvent::InputKeyAction(
+                        data.id.into(),
+                        data.key.into(),
+                        data.pressed,
+                    )
+                }
+
+                ffi::emwin_event_type_EMWIN_EVENT_INPUT_MOUSE_MOTION => {
+                    let data = event.__bindgen_anon_1.mouse_motion;
+
+                    DesktopEvent::InputMouseMotion(
+                        data.id.into(),
+                        [data.delta_pos.x as f64, data.delta_pos.y as f64],
+                    )
+                }
+
+                ffi::emwin_event_type_EMWIN_EVENT_INPUT_MOUSE_BUTTON_ACTION => {
+                    let data = event.__bindgen_anon_1.button_action;
+
+                    DesktopEvent::InputMouseButtonAction(
+                        data.id.into(),
+                        data.button.into(),
+                        data.pressed,
+                    )
+                }
+
+                ffi::emwin_event_type_EMWIN_EVENT_INPUT_MOUSE_WHEEL => {
+                    let data = event.__bindgen_anon_1.mouse_wheel;
+
+                    DesktopEvent::InputMouseWheel(
+                        data.id.into(),
+                        [data.delta_scroll.x as f64, data.delta_scroll.y as f64],
+                    )
+                }
+
+                ffi::emwin_event_type_EMWIN_EVENT_JOYSTICK_CONNECT => {
+                    DesktopEvent::JoystickConnect(
+                        event.__bindgen_anon_1.joystick_connect.id.into()
+                    )
+                }
+
+                ffi::emwin_event_type_EMWIN_EVENT_JOYSTICK_DISCONNECT => {
+                    DesktopEvent::JoystickDisconnect(
+                        event.__bindgen_anon_1.joystick_disconnect.id.into()
+                    )
+                }
+
+                _ => unreachable!("invalid Ember window event type: {}", event.type_),
+            }
+        })
+    }
     pub fn wait_events(&mut self) -> Option<DesktopEvent> {
         todo!()
     }
@@ -311,8 +448,22 @@ pub enum KeyCode {
     Menu,
 }
 
+#[repr(u32)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum MouseCode {
     Left,
     Right,
     Middle,
+}
+
+impl From<u32> for KeyCode {
+    fn from(value: u32) -> Self {
+        unsafe { std::mem::transmute(value) }
+    }
+}
+
+impl From<u32> for MouseCode {
+    fn from(value: u32) -> Self {
+        unsafe { std::mem::transmute(value) }
+    }
 }

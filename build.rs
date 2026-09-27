@@ -1,4 +1,6 @@
-fn main() {
+use std::error::Error;
+
+fn main() -> std::result::Result<(), Box<dyn Error>> {
     println!("cargo:rerun-if-changed=wrapper.h");
 
     let bindings = bindgen::Builder::default()
@@ -8,8 +10,8 @@ fn main() {
         .allowlist_type("em.*")
         .allowlist_var("EM.*")
         .allowlist_var("EMBER_.*")
-        .generate()
-        .unwrap();
+        .generate()?;
 
-    bindings.write_to_file("src/ffi.rs").unwrap();
+    bindings.write_to_file("src/ffi.rs")?;
+    Ok(())
 }

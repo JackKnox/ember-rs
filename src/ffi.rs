@@ -2654,9 +2654,9 @@ pub struct emwin_desktop_event {
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub union emwin_desktop_event__bindgen_ty_1 {
-    pub window_close: emwin_desktop_event__bindgen_ty_1__bindgen_ty_1,
-    pub monitor_connect: emwin_desktop_event__bindgen_ty_1__bindgen_ty_2,
-    pub monitor_disconnect: emwin_desktop_event__bindgen_ty_1__bindgen_ty_3,
+    pub monitor_connect: emwin_desktop_event__bindgen_ty_1__bindgen_ty_1,
+    pub monitor_disconnect: emwin_desktop_event__bindgen_ty_1__bindgen_ty_2,
+    pub window_close: emwin_desktop_event__bindgen_ty_1__bindgen_ty_3,
     pub window_resize: emwin_desktop_event__bindgen_ty_1__bindgen_ty_4,
     pub window_focus_gained: emwin_desktop_event__bindgen_ty_1__bindgen_ty_5,
     pub window_focus_lost: emwin_desktop_event__bindgen_ty_1__bindgen_ty_6,
@@ -2667,23 +2667,22 @@ pub union emwin_desktop_event__bindgen_ty_1 {
     pub joystick_connect: emwin_desktop_event__bindgen_ty_1__bindgen_ty_11,
     pub joystick_disconnect: emwin_desktop_event__bindgen_ty_1__bindgen_ty_12,
 }
-#[doc = " @brief Data for EMWIN_EVENT_WINDOW_CLOSE.\n\n Contains the identifier of the window that requested closing."]
+#[doc = " @brief Data for EMWIN_EVENT_MONITOR_CONNECT.\n\n Contains the identifier of the monitor that has been connected."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct emwin_desktop_event__bindgen_ty_1__bindgen_ty_1 {
-    #[doc = " @brief Window identifier."]
-    pub id: emwin_window_id,
+    pub monitor: emwin_monitor,
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
     ["Size of emwin_desktop_event__bindgen_ty_1__bindgen_ty_1"]
-        [::std::mem::size_of::<emwin_desktop_event__bindgen_ty_1__bindgen_ty_1>() - 8usize];
+        [::std::mem::size_of::<emwin_desktop_event__bindgen_ty_1__bindgen_ty_1>() - 72usize];
     ["Alignment of emwin_desktop_event__bindgen_ty_1__bindgen_ty_1"]
         [::std::mem::align_of::<emwin_desktop_event__bindgen_ty_1__bindgen_ty_1>() - 8usize];
-    ["Offset of field: emwin_desktop_event__bindgen_ty_1__bindgen_ty_1::id"]
-        [::std::mem::offset_of!(emwin_desktop_event__bindgen_ty_1__bindgen_ty_1, id) - 0usize];
+    ["Offset of field: emwin_desktop_event__bindgen_ty_1__bindgen_ty_1::monitor"]
+        [::std::mem::offset_of!(emwin_desktop_event__bindgen_ty_1__bindgen_ty_1, monitor) - 0usize];
 };
-#[doc = " @brief Data for EMWIN_EVENT_MONITOR_CONNECT.\n\n Contains the identifier of the monitor that has been connected."]
+#[doc = " @brief Data for EMWIN_EVENT_MONITOR_DISCONNECT.\n\n Contains the identifier of the monitor that has been disconnected."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct emwin_desktop_event__bindgen_ty_1__bindgen_ty_2 {
@@ -2698,36 +2697,41 @@ const _: () = {
     ["Offset of field: emwin_desktop_event__bindgen_ty_1__bindgen_ty_2::monitor"]
         [::std::mem::offset_of!(emwin_desktop_event__bindgen_ty_1__bindgen_ty_2, monitor) - 0usize];
 };
-#[doc = " @brief Data for EMWIN_EVENT_MONITOR_DISCONNECT.\n\n Contains the identifier of the monitor that has been disconnected."]
+#[doc = " @brief Data for EMWIN_EVENT_WINDOW_CLOSE.\n\n Contains the identifier of the window that requested closing."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct emwin_desktop_event__bindgen_ty_1__bindgen_ty_3 {
-    pub monitor: emwin_monitor,
+    #[doc = " @brief Window identifier."]
+    pub id: emwin_window_id,
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
     ["Size of emwin_desktop_event__bindgen_ty_1__bindgen_ty_3"]
-        [::std::mem::size_of::<emwin_desktop_event__bindgen_ty_1__bindgen_ty_3>() - 72usize];
+        [::std::mem::size_of::<emwin_desktop_event__bindgen_ty_1__bindgen_ty_3>() - 8usize];
     ["Alignment of emwin_desktop_event__bindgen_ty_1__bindgen_ty_3"]
         [::std::mem::align_of::<emwin_desktop_event__bindgen_ty_1__bindgen_ty_3>() - 8usize];
-    ["Offset of field: emwin_desktop_event__bindgen_ty_1__bindgen_ty_3::monitor"]
-        [::std::mem::offset_of!(emwin_desktop_event__bindgen_ty_1__bindgen_ty_3, monitor) - 0usize];
+    ["Offset of field: emwin_desktop_event__bindgen_ty_1__bindgen_ty_3::id"]
+        [::std::mem::offset_of!(emwin_desktop_event__bindgen_ty_1__bindgen_ty_3, id) - 0usize];
 };
 #[doc = " @brief Data for EMWIN_EVENT_WINDOW_RESIZE.\n\n Contains the new window dimensions."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct emwin_desktop_event__bindgen_ty_1__bindgen_ty_4 {
+    #[doc = " @brief Window identifier."]
+    pub id: emwin_window_id,
     #[doc = " @brief New window size in pixels."]
     pub size: uvec2,
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
     ["Size of emwin_desktop_event__bindgen_ty_1__bindgen_ty_4"]
-        [::std::mem::size_of::<emwin_desktop_event__bindgen_ty_1__bindgen_ty_4>() - 8usize];
+        [::std::mem::size_of::<emwin_desktop_event__bindgen_ty_1__bindgen_ty_4>() - 16usize];
     ["Alignment of emwin_desktop_event__bindgen_ty_1__bindgen_ty_4"]
-        [::std::mem::align_of::<emwin_desktop_event__bindgen_ty_1__bindgen_ty_4>() - 4usize];
+        [::std::mem::align_of::<emwin_desktop_event__bindgen_ty_1__bindgen_ty_4>() - 8usize];
+    ["Offset of field: emwin_desktop_event__bindgen_ty_1__bindgen_ty_4::id"]
+        [::std::mem::offset_of!(emwin_desktop_event__bindgen_ty_1__bindgen_ty_4, id) - 0usize];
     ["Offset of field: emwin_desktop_event__bindgen_ty_1__bindgen_ty_4::size"]
-        [::std::mem::offset_of!(emwin_desktop_event__bindgen_ty_1__bindgen_ty_4, size) - 0usize];
+        [::std::mem::offset_of!(emwin_desktop_event__bindgen_ty_1__bindgen_ty_4, size) - 8usize];
 };
 #[doc = " @brief Data for EMWIN_EVENT_WINDOW_FOCUS_GAINED.\n\n Indicates the window received input focus."]
 #[repr(C)]
@@ -2895,12 +2899,12 @@ const _: () = {
         [::std::mem::size_of::<emwin_desktop_event__bindgen_ty_1>() - 72usize];
     ["Alignment of emwin_desktop_event__bindgen_ty_1"]
         [::std::mem::align_of::<emwin_desktop_event__bindgen_ty_1>() - 8usize];
-    ["Offset of field: emwin_desktop_event__bindgen_ty_1::window_close"]
-        [::std::mem::offset_of!(emwin_desktop_event__bindgen_ty_1, window_close) - 0usize];
     ["Offset of field: emwin_desktop_event__bindgen_ty_1::monitor_connect"]
         [::std::mem::offset_of!(emwin_desktop_event__bindgen_ty_1, monitor_connect) - 0usize];
     ["Offset of field: emwin_desktop_event__bindgen_ty_1::monitor_disconnect"]
         [::std::mem::offset_of!(emwin_desktop_event__bindgen_ty_1, monitor_disconnect) - 0usize];
+    ["Offset of field: emwin_desktop_event__bindgen_ty_1::window_close"]
+        [::std::mem::offset_of!(emwin_desktop_event__bindgen_ty_1, window_close) - 0usize];
     ["Offset of field: emwin_desktop_event__bindgen_ty_1::window_resize"]
         [::std::mem::offset_of!(emwin_desktop_event__bindgen_ty_1, window_resize) - 0usize];
     ["Offset of field: emwin_desktop_event__bindgen_ty_1::window_focus_gained"]
