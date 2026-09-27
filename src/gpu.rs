@@ -53,8 +53,17 @@ pub struct Device {
     sys: ffi::emgpu_device,
 }
 
-pub struct CommandBuffer {
-    sys: ffi::emgpu_command_buffer,
+impl Default for DeviceConfig {
+    fn default() -> Self {
+        DeviceConfig {
+            debug_name: String::from("ember-rs GPU device"),
+            frame_allocator: Allocator::system(),
+            app_version: Version::new(0, 0, 1),
+            required_modes: DeviceMode::Raster,
+            optional_modes: DeviceMode::empty(),
+            frames_in_flight: 3,
+        }
+    }
 }
 
 impl Device {
@@ -105,4 +114,8 @@ impl Device {
     pub fn submit(&mut self, command_buffer: CommandBuffer) -> Result<()> {
         todo!()
     }
+}
+
+pub struct CommandBuffer {
+    sys: ffi::emgpu_command_buffer,
 }
