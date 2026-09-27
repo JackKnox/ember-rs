@@ -39,12 +39,12 @@ pub struct DeviceCapabilities<'a> {
 }
 
 pub struct DeviceConfig {
-    debug_name: String,
-    frame_allocator: Allocator,
-    app_version: Version,
-    required_modes: DeviceMode,
-    optional_modes: DeviceMode,
-    frames_in_flight: u32, //extensions: Vec<Box<dyn DeviceExtension>>
+    pub debug_name: String,
+    pub frame_allocator: Allocator,
+    pub app_version: Version,
+    pub required_modes: DeviceMode,
+    pub optional_modes: DeviceMode,
+    pub frames_in_flight: u32, //extensions: Vec<Box<dyn DeviceExtension>>
 }
 
 pub struct Queue(ffi::emgpu_queue);

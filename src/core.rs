@@ -7,6 +7,14 @@ pub struct Allocator {
     pub sys: UnsafeCell<ffi::em_allocator>,
 }
 
+impl Clone for Allocator {
+    fn clone(&self) -> Self {
+        Self {
+            sys: UnsafeCell::new(unsafe { *self.sys.get() }),
+        }
+    }
+}
+
 impl Allocator {
     pub fn system() -> Allocator {
         unsafe { Allocator { sys: UnsafeCell::new(ffi::emplat_system_allocator()) } }
