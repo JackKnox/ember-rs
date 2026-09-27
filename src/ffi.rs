@@ -707,6 +707,483 @@ unsafe extern "C" {
         command_buf: *mut emgpu_command_buffer,
     ) -> emgpu_local_framebuffer;
 }
+#[doc = " @brief Backend-agnostic GPU surface objects.\n\n Represents a backend-agnsotic object that connectes a platform surface."]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct emgpu_surface {
+    #[doc = " @brief Backend-specific internal data."]
+    pub internal_data: *mut ::std::os::raw::c_void,
+    #[doc = " @brief Format of the pixel(s) attachted to the platform surface."]
+    pub pixel_format: emgpu_format,
+    #[doc = " @brief Number of owned images used for concurrent rendering."]
+    pub image_count: u32_,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of emgpu_surface"][::std::mem::size_of::<emgpu_surface>() - 16usize];
+    ["Alignment of emgpu_surface"][::std::mem::align_of::<emgpu_surface>() - 8usize];
+    ["Offset of field: emgpu_surface::internal_data"]
+        [::std::mem::offset_of!(emgpu_surface, internal_data) - 0usize];
+    ["Offset of field: emgpu_surface::pixel_format"]
+        [::std::mem::offset_of!(emgpu_surface, pixel_format) - 8usize];
+    ["Offset of field: emgpu_surface::image_count"]
+        [::std::mem::offset_of!(emgpu_surface, image_count) - 12usize];
+};
+unsafe extern "C" {
+    #[doc = " @brief Resizes a rendering size to given size.\n\n @param device Pointer to the device instance.\n @param allocator Pointer to same allocator used to create surface.\n @param surface Surface to resize.\n @param new_size New size of surface. 0, 0 = minimized.\n @note Surface is not guarenteeed to be resized immediately; In\n       some backends surface is resized next frame it's rendered to."]
+    pub fn emgpu_surface_resize(
+        device: *mut emgpu_device,
+        allocator: *mut em_allocator,
+        surface: *mut emgpu_surface,
+        new_size: uvec2,
+    ) -> em_result;
+}
+unsafe extern "C" {
+    #[doc = " @brief Destroys a rendering surface.\n\n @param device Pointer to the device instance.\n @param allocator Allocator used to manage device memory.\n @param surface Surface to destroy."]
+    pub fn emgpu_surface_destroy(
+        device: *mut emgpu_device,
+        allocator: *mut em_allocator,
+        surface: *mut emgpu_surface,
+    );
+}
+unsafe extern "C" {
+    #[doc = " @brief Acquires the next available surface texture for rendering.\n\n Enqueues a presentation acquisition operation and returns a local\n reference to the acquired surface texture.\n\n @param command_buf Pointer to the command buffer.\n @param surface Surface to acquire the next presentation image from.\n\n @return A local framebuffer handle valid for the duration of the command buffer recording."]
+    pub fn emgpu_cmd_acquire_surface(
+        command_buf: *mut emgpu_command_buffer,
+        surface: *mut emgpu_surface,
+    ) -> emgpu_local_framebuffer;
+}
+pub type emwin_window_id = u64_;
+pub type emwin_monitor_id = u64_;
+#[doc = " @brief Platform desktop handle.\n\n A desktop represents a connection to a display manager (e.g. Wayland or Win32).\n To create one you must have at least one window. The desktop controls state such\n as input state, event callbacks, joysticks and monitor control."]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct emwin_desktop {
+    #[doc = " @brief Indicates whether the desktop was successfully initialized."]
+    pub initialized: b8,
+    #[doc = " @brief Platform-specific display state."]
+    pub internal_context: *mut ::std::os::raw::c_void,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of emwin_desktop"][::std::mem::size_of::<emwin_desktop>() - 16usize];
+    ["Alignment of emwin_desktop"][::std::mem::align_of::<emwin_desktop>() - 8usize];
+    ["Offset of field: emwin_desktop::initialized"]
+        [::std::mem::offset_of!(emwin_desktop, initialized) - 0usize];
+    ["Offset of field: emwin_desktop::internal_context"]
+        [::std::mem::offset_of!(emwin_desktop, internal_context) - 8usize];
+};
+#[doc = " @brief Describes a physical display monitor."]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct emwin_monitor {
+    #[doc = " @brief Position of the monitor in compositor space."]
+    pub position: uvec2,
+    #[doc = " @brief Physical dimensions of the monitor in millimeters."]
+    pub physical_size: uvec2,
+    #[doc = " @brief Logical dimensions of the monitor in pixels."]
+    pub size: uvec2,
+    #[doc = " @brief Subpixel layout of the monitor."]
+    pub subpixel: i32_,
+    #[doc = " @brief Manufacturer name."]
+    pub make: *const ::std::os::raw::c_char,
+    #[doc = " @brief Model name."]
+    pub model: *const ::std::os::raw::c_char,
+    #[doc = " @brief Unique output name assigned by the compositor."]
+    pub name: *const ::std::os::raw::c_char,
+    #[doc = " @brief Transform applied to the monitor."]
+    pub transform: i32_,
+    #[doc = " @brief Unique identifier for the monitor."]
+    pub id: emwin_monitor_id,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of emwin_monitor"][::std::mem::size_of::<emwin_monitor>() - 72usize];
+    ["Alignment of emwin_monitor"][::std::mem::align_of::<emwin_monitor>() - 8usize];
+    ["Offset of field: emwin_monitor::position"]
+        [::std::mem::offset_of!(emwin_monitor, position) - 0usize];
+    ["Offset of field: emwin_monitor::physical_size"]
+        [::std::mem::offset_of!(emwin_monitor, physical_size) - 8usize];
+    ["Offset of field: emwin_monitor::size"][::std::mem::offset_of!(emwin_monitor, size) - 16usize];
+    ["Offset of field: emwin_monitor::subpixel"]
+        [::std::mem::offset_of!(emwin_monitor, subpixel) - 24usize];
+    ["Offset of field: emwin_monitor::make"][::std::mem::offset_of!(emwin_monitor, make) - 32usize];
+    ["Offset of field: emwin_monitor::model"]
+        [::std::mem::offset_of!(emwin_monitor, model) - 40usize];
+    ["Offset of field: emwin_monitor::name"][::std::mem::offset_of!(emwin_monitor, name) - 48usize];
+    ["Offset of field: emwin_monitor::transform"]
+        [::std::mem::offset_of!(emwin_monitor, transform) - 56usize];
+    ["Offset of field: emwin_monitor::id"][::std::mem::offset_of!(emwin_monitor, id) - 64usize];
+};
+unsafe extern "C" {
+    #[doc = " Polls for the next pending desktop event without blocking.\n\n If an event is available, it is written to @p out_event and a success\n result is returned. If no events are pending, the function returns\n immediately with a result indicating that no event was available.\n\n @param desktop The desktop instance to poll.\n @param out_event Receives the next event if one is available.\n\n @return A Ember result code indicating success, no pending events, or an error."]
+    pub fn emwin_poll_events(
+        desktop: *mut emwin_desktop,
+        out_event: *mut emwin_desktop_event,
+    ) -> em_result;
+}
+unsafe extern "C" {
+    #[doc = " Waits until the next desktop event becomes available.\n\n This function blocks the calling thread until an event is available or\n an error occurs. The received event is written to @p out_event.\n\n @param desktop The desktop instance to wait on.\n @param out_event Receives the next event.\n\n @return A Ember result code indicating success or an error."]
+    pub fn emwin_wait_events(
+        desktop: *mut emwin_desktop,
+        out_event: *mut emwin_desktop_event,
+    ) -> em_result;
+}
+unsafe extern "C" {
+    #[doc = " @brief Put UTF-8 text into the clipboard.\n\n @param text The text to store in the clipboard.\n @return Ember result code; returns `EMBER_RESULT_OK` if succeeds."]
+    pub fn emwin_set_clipboard_text(
+        desktop: *mut emwin_desktop,
+        text: *const ::std::os::raw::c_char,
+    ) -> em_result;
+}
+unsafe extern "C" {
+    #[doc = " @brief Get UTF-8 text from the clipboard.\n\n @return the clipboard text on success, or NULL on failure.\n\n @note The returned string must be freed manually using `mem_free`."]
+    pub fn emwin_get_clipboard_text(desktop: *mut emwin_desktop) -> *mut ::std::os::raw::c_char;
+}
+unsafe extern "C" {
+    #[doc = " @brief Query whether the clipboard exists and contains a non-empty text string.\n\n @return true if the clipboard has text, or false if it does not."]
+    pub fn emwin_has_clipboard_text(desktop: *mut emwin_desktop) -> b8;
+}
+#[doc = " @brief Describes a data format used by the ember_window subsystem.\n Any other format values outside this enum is not supported by\n the subsystem.\n\n Used for shm software rendering, window icons and custom cursors."]
+pub type emwin_format = u32_;
+#[doc = " @brief Configuration for a shared-memory pool."]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct emwin_shm_pool_config {
+    #[doc = " @brief Size of the shared-memory pool in bytes."]
+    pub size: u64_,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of emwin_shm_pool_config"][::std::mem::size_of::<emwin_shm_pool_config>() - 8usize];
+    ["Alignment of emwin_shm_pool_config"]
+        [::std::mem::align_of::<emwin_shm_pool_config>() - 8usize];
+    ["Offset of field: emwin_shm_pool_config::size"]
+        [::std::mem::offset_of!(emwin_shm_pool_config, size) - 0usize];
+};
+#[doc = " @brief Represents a shared-memory pool.\n\n A shared-memory pool owns the backing storage from which one or more\n shared-memory buffers can be created."]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct emwin_shm_pool {
+    #[doc = " @brief Internal platform-specific pool data."]
+    pub internal_data: *mut ::std::os::raw::c_void,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of emwin_shm_pool"][::std::mem::size_of::<emwin_shm_pool>() - 8usize];
+    ["Alignment of emwin_shm_pool"][::std::mem::align_of::<emwin_shm_pool>() - 8usize];
+    ["Offset of field: emwin_shm_pool::internal_data"]
+        [::std::mem::offset_of!(emwin_shm_pool, internal_data) - 0usize];
+};
+unsafe extern "C" {
+    #[doc = " @brief Creates a shared-memory pool.\n\n @param desktop Desktop connection the pool belongs to.\n @param allocator Allocator used to create the pool.\n @param config Pool configuration.\n @param out_pool Receives the created pool.\n\n @return Ember result code; returns `EMBER_RESULT_OK` if succeds."]
+    pub fn emwin_shm_pool_create(
+        desktop: *mut emwin_desktop,
+        allocator: *mut em_allocator,
+        config: *const emwin_shm_pool_config,
+        out_pool: *mut emwin_shm_pool,
+    ) -> em_result;
+}
+unsafe extern "C" {
+    #[doc = " @brief Destroys a shared-memory pool.\n\n All buffers created from the pool must be freed before destroying it.\n\n @param allocator Allocator used to create the pool.\n @param pool Pool to destroy."]
+    pub fn emwin_shm_pool_destroy(allocator: *mut em_allocator, pool: *mut emwin_shm_pool);
+}
+#[doc = " @brief Configuration for a shared-memory buffer."]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct emwin_shm_buffer_config {
+    #[doc = " @brief Pixel format of the image stored in the buffer."]
+    pub image_format: emwin_format,
+    #[doc = " @brief Byte offset of the buffer within its shared-memory pool."]
+    pub offset: u64_,
+    #[doc = " @brief Size of the buffer in bytes."]
+    pub size: uvec2,
+    #[doc = " @brief Number of bytes between the start of consecutive image rows."]
+    pub stride: u64_,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of emwin_shm_buffer_config"][::std::mem::size_of::<emwin_shm_buffer_config>() - 32usize];
+    ["Alignment of emwin_shm_buffer_config"]
+        [::std::mem::align_of::<emwin_shm_buffer_config>() - 8usize];
+    ["Offset of field: emwin_shm_buffer_config::image_format"]
+        [::std::mem::offset_of!(emwin_shm_buffer_config, image_format) - 0usize];
+    ["Offset of field: emwin_shm_buffer_config::offset"]
+        [::std::mem::offset_of!(emwin_shm_buffer_config, offset) - 8usize];
+    ["Offset of field: emwin_shm_buffer_config::size"]
+        [::std::mem::offset_of!(emwin_shm_buffer_config, size) - 16usize];
+    ["Offset of field: emwin_shm_buffer_config::stride"]
+        [::std::mem::offset_of!(emwin_shm_buffer_config, stride) - 24usize];
+};
+#[doc = " @brief Represents a shared-memory image buffer.\n\n A buffer describes a region of a shared-memory pool that can be used\n as pixel storage for a window surface."]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct emwin_shm_buffer {
+    #[doc = " @brief Internal platform-specific buffer data."]
+    pub internal_data: *mut ::std::os::raw::c_void,
+    #[doc = " @brief Pointer to the buffer's CPU-accessible pixel data."]
+    pub buffer: *mut ::std::os::raw::c_void,
+    #[doc = " @brief Width and height of the image in pixels."]
+    pub size: uvec2,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of emwin_shm_buffer"][::std::mem::size_of::<emwin_shm_buffer>() - 24usize];
+    ["Alignment of emwin_shm_buffer"][::std::mem::align_of::<emwin_shm_buffer>() - 8usize];
+    ["Offset of field: emwin_shm_buffer::internal_data"]
+        [::std::mem::offset_of!(emwin_shm_buffer, internal_data) - 0usize];
+    ["Offset of field: emwin_shm_buffer::buffer"]
+        [::std::mem::offset_of!(emwin_shm_buffer, buffer) - 8usize];
+    ["Offset of field: emwin_shm_buffer::size"]
+        [::std::mem::offset_of!(emwin_shm_buffer, size) - 16usize];
+};
+unsafe extern "C" {
+    #[doc = " @brief Allocates a shared-memory buffer from a pool.\n\n @param pool Pool from which the buffer is allocated.\n @param allocator Allocator used to create the buffer.\n @param config Buffer configuration.\n @param out_buffer Receives the allocated buffer.\n\n @return Ember result code; returns `EMBER_RESULT_OK` if succeds."]
+    pub fn emwin_shm_buffer_alloc(
+        pool: *mut emwin_shm_pool,
+        allocator: *mut em_allocator,
+        config: *const emwin_shm_buffer_config,
+        out_buffer: *mut emwin_shm_buffer,
+    ) -> em_result;
+}
+unsafe extern "C" {
+    #[doc = " @brief Frees a shared-memory buffer.\n\n @param pool Pool containing the buffer.\n @param allocator Allocator used to create the buffer.\n @param buffer Buffer to free."]
+    pub fn emwin_shm_buffer_free(
+        pool: *mut emwin_shm_pool,
+        allocator: *mut em_allocator,
+        buffer: *mut emwin_shm_buffer,
+    );
+}
+#[doc = "< Standard windowed mode."]
+pub const emwin_window_mode_EMBER_WINDOW_MODE_WINDOWED: emwin_window_mode = 0;
+#[doc = "< Window is created maximized."]
+pub const emwin_window_mode_EMBER_WINDOW_MODE_MAXIMIZED: emwin_window_mode = 1;
+#[doc = "< Fullscreen mode covering the entire display."]
+pub const emwin_window_mode_EMBER_WINDOW_MODE_FULLSCREEN: emwin_window_mode = 2;
+#[doc = " @brief Describes the display mode of a window."]
+pub type emwin_window_mode = ::std::os::raw::c_uint;
+#[doc = "< Window is visible immediately after creation."]
+pub const emwin_window_flags_EMBER_WINDOW_FLAGS_VISIBLE: emwin_window_flags = 1;
+#[doc = "< Window has no title bar / borders. User may want to render them manually."]
+pub const emwin_window_flags_EMBER_WINDOW_FLAGS_NOT_DECORATED: emwin_window_flags = 2;
+#[doc = "< Window can be resized by the user."]
+pub const emwin_window_flags_EMBER_WINDOW_FLAGS_LOCKED_SIZE: emwin_window_flags = 4;
+#[doc = "< Window has VSync enabled (metadata held for the GAPI)."]
+pub const emwin_window_flags_EMBER_WINDOW_FLAGS_VSYNC: emwin_window_flags = 8;
+#[doc = " @brief Bitmask flags controlling window creation behavior.\n\n These flags can be combined using bitwise OR."]
+pub type emwin_window_flags = ::std::os::raw::c_uint;
+#[doc = "< Cursor is visible and moves freely."]
+pub const emwin_cursor_mode_EMBER_CURSOR_MODE_NORMAL: emwin_cursor_mode = 0;
+#[doc = "< Cursor is hidden but not locked."]
+pub const emwin_cursor_mode_EMBER_CURSOR_MODE_HIDDEN: emwin_cursor_mode = 1;
+#[doc = "< Cursor is hidden and locked (relative input mode)."]
+pub const emwin_cursor_mode_EMBER_CURSOR_MODE_DISABLED: emwin_cursor_mode = 2;
+#[doc = " @brief Controls how the cursor behaves within the window."]
+pub type emwin_cursor_mode = ::std::os::raw::c_uint;
+#[doc = " @brief Configuration used when creating a window.\n\n This structure defines all parameters required to initialise a platform window,\n including size, position, display mode, and behavioral flags."]
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub struct emwin_window_config {
+    #[doc = " @brief Initial window display mode."]
+    pub window_mode: emwin_window_mode,
+    #[doc = " @brief Initial cursor mode."]
+    pub cursor_mode: emwin_cursor_mode,
+    #[doc = " @brief Window creation flags."]
+    pub flags: emwin_window_flags,
+    #[doc = " @brief Window title as a UTF-8 encoded string."]
+    pub title: *const ::std::os::raw::c_char,
+    pub __bindgen_anon_1: emwin_window_config__bindgen_ty_1,
+    #[doc = " @brief Minimum client area size in pixels (0,0 = no limit)."]
+    pub min_size: uvec2,
+    #[doc = " @brief Maximum client area size in pixels (0,0 = no limit)."]
+    pub max_size: uvec2,
+    #[doc = " @brief Initial client area size in pixels."]
+    pub size: uvec2,
+}
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub union emwin_window_config__bindgen_ty_1 {
+    #[doc = " @brief Absolute position in screen coordinates (pixels)."]
+    pub absolute_pos: uvec2,
+    #[doc = " @brief If TRUE, window will be centered on the selected display."]
+    pub centered_pos: b8,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of emwin_window_config__bindgen_ty_1"]
+        [::std::mem::size_of::<emwin_window_config__bindgen_ty_1>() - 8usize];
+    ["Alignment of emwin_window_config__bindgen_ty_1"]
+        [::std::mem::align_of::<emwin_window_config__bindgen_ty_1>() - 4usize];
+    ["Offset of field: emwin_window_config__bindgen_ty_1::absolute_pos"]
+        [::std::mem::offset_of!(emwin_window_config__bindgen_ty_1, absolute_pos) - 0usize];
+    ["Offset of field: emwin_window_config__bindgen_ty_1::centered_pos"]
+        [::std::mem::offset_of!(emwin_window_config__bindgen_ty_1, centered_pos) - 0usize];
+};
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of emwin_window_config"][::std::mem::size_of::<emwin_window_config>() - 56usize];
+    ["Alignment of emwin_window_config"][::std::mem::align_of::<emwin_window_config>() - 8usize];
+    ["Offset of field: emwin_window_config::window_mode"]
+        [::std::mem::offset_of!(emwin_window_config, window_mode) - 0usize];
+    ["Offset of field: emwin_window_config::cursor_mode"]
+        [::std::mem::offset_of!(emwin_window_config, cursor_mode) - 4usize];
+    ["Offset of field: emwin_window_config::flags"]
+        [::std::mem::offset_of!(emwin_window_config, flags) - 8usize];
+    ["Offset of field: emwin_window_config::title"]
+        [::std::mem::offset_of!(emwin_window_config, title) - 16usize];
+    ["Offset of field: emwin_window_config::min_size"]
+        [::std::mem::offset_of!(emwin_window_config, min_size) - 32usize];
+    ["Offset of field: emwin_window_config::max_size"]
+        [::std::mem::offset_of!(emwin_window_config, max_size) - 40usize];
+    ["Offset of field: emwin_window_config::size"]
+        [::std::mem::offset_of!(emwin_window_config, size) - 48usize];
+};
+#[doc = " @brief Platform window handle.\n\n Represents a platform window and its associated state.\n All platform-specific and renderer-specific details are stored internally\n and are opaque to the user."]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct emwin_window {
+    #[doc = " @brief Current client area size in pixels. Updated on resize events."]
+    pub size: uvec2,
+    #[doc = " @brief Assigned ID of the window."]
+    pub id: emwin_window_id,
+    #[doc = " @brief Current window title.\n\n This string is owned by the window and may be reallocated when changed."]
+    pub title: *mut ::std::os::raw::c_char,
+    #[doc = " @brief Owner desktop object, represents a connection to the WM."]
+    pub desktop: *mut emwin_desktop,
+    #[doc = " @brief Platform-specific window state."]
+    pub internal_context: *mut ::std::os::raw::c_void,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of emwin_window"][::std::mem::size_of::<emwin_window>() - 40usize];
+    ["Alignment of emwin_window"][::std::mem::align_of::<emwin_window>() - 8usize];
+    ["Offset of field: emwin_window::size"][::std::mem::offset_of!(emwin_window, size) - 0usize];
+    ["Offset of field: emwin_window::id"][::std::mem::offset_of!(emwin_window, id) - 8usize];
+    ["Offset of field: emwin_window::title"][::std::mem::offset_of!(emwin_window, title) - 16usize];
+    ["Offset of field: emwin_window::desktop"]
+        [::std::mem::offset_of!(emwin_window, desktop) - 24usize];
+    ["Offset of field: emwin_window::internal_context"]
+        [::std::mem::offset_of!(emwin_window, internal_context) - 32usize];
+};
+unsafe extern "C" {
+    #[doc = " @brief Creates and opens a window.\n\n Initialises a platform window using the provided configuration and writes\n the resulting state to @p out_window.\n\n @param allocator Allocator used for internal allocations.\n @param config Pointer to the window configuration.\n @param monitor Monitor to assign window to.\n @param out_window Pointer to the window to initialise.\n @param out_desktop Pointer to desktop, lazyily initialises.\n @return Ember result code; returns `EMBER_RESULT_OK` if succeeds.\n\n @note Passing a valid @p out_desktop is strongly recommended to avoid\n       reinitialising shared global platform state."]
+    pub fn emwin_window_open(
+        allocator: *mut em_allocator,
+        config: *const emwin_window_config,
+        monitor: emwin_monitor_id,
+        out_window: *mut emwin_window,
+        out_desktop: *mut *mut emwin_desktop,
+    ) -> em_result;
+}
+unsafe extern "C" {
+    #[doc = " @brief Forces closing a window and destroys all OS resources.\n\n Releases all platform and renderer resources associated with the window and immediatly closes.\n\n @param window Pointer to the window to close."]
+    pub fn emwin_window_close(allocator: *mut em_allocator, window: *mut emwin_window);
+}
+unsafe extern "C" {
+    #[doc = " @brief Request the closure of window.\n\n This submits a window close event to the desktop-wide event queue.\n\n @param window Pointer to the window to close.\n\n @note This is different to @ref emwin_window_close\n       as it only notifies your application"]
+    pub fn emwin_window_request_close(window: *mut emwin_window);
+}
+unsafe extern "C" {
+    #[doc = " @brief Set visbility of the window.\n\n This immediately shows / hides the window when called.\n\n @param window Pointer to the window.\n @param visible Whetever to show or hide."]
+    pub fn emwin_window_set_visible(window: *mut emwin_window, visible: b8);
+}
+unsafe extern "C" {
+    #[doc = " @brief Checks whether the window is visible or hidden.\n\n @param window Pointer to the window.\n @return TRUE if the window is visible; otherwise FALSE."]
+    pub fn emwin_window_visible(window: *const emwin_window) -> b8;
+}
+unsafe extern "C" {
+    #[doc = " @brief Attaches a shared-memory buffer to a window.\n\n The buffer is used as the window's backing pixel storage. The specified\n offset determines the position within the window at which the buffer is\n attached.\n\n @param window Window to attach the buffer to.\n @param buffer Shared-memory buffer to attach.\n @param offset Offset within the window at which to attach the buffer.\n\n @return Ember result code; returns `EMBER_RESULT_OK` if succeeds."]
+    pub fn emwin_window_attach(
+        window: *mut emwin_window,
+        buffer: *mut emwin_shm_buffer,
+        offset: uvec2,
+    ) -> em_result;
+}
+unsafe extern "C" {
+    #[doc = " @brief Marks a region of a window as damaged.\n\n The damaged region indicates an area whose contents have changed and\n should be presented to the desktop.\n\n @param window Window whose contents were modified.\n @param offset Offset of the damaged region within the window.\n @param size Size of the damaged region.\n\n @return Ember result code; returns `EMBER_RESULT_OK` if succeeds."]
+    pub fn emwin_window_damage(window: *mut emwin_window, offset: uvec2, size: uvec2) -> em_result;
+}
+#[doc = " @brief Configuration for creating a ember_window-backed GPU surface."]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct emgpu_emwin_surface_config {
+    #[doc = " @brief Requested format of the surface texture."]
+    pub preferred_format: emgpu_format,
+    #[doc = " @brief Whetever to exit if exact preferred format isn't found."]
+    pub force_format: b8,
+    #[doc = " @brief Minimum number of presentable textures the user needs."]
+    pub min_texture_count: u32_,
+    #[doc = " @brief Usage of the outputted textures."]
+    pub usage: emgpu_texture_usage,
+    #[doc = " @brief ember_window window to attach GPU surface to."]
+    pub window: *mut emwin_window,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of emgpu_emwin_surface_config"]
+        [::std::mem::size_of::<emgpu_emwin_surface_config>() - 24usize];
+    ["Alignment of emgpu_emwin_surface_config"]
+        [::std::mem::align_of::<emgpu_emwin_surface_config>() - 8usize];
+    ["Offset of field: emgpu_emwin_surface_config::preferred_format"]
+        [::std::mem::offset_of!(emgpu_emwin_surface_config, preferred_format) - 0usize];
+    ["Offset of field: emgpu_emwin_surface_config::force_format"]
+        [::std::mem::offset_of!(emgpu_emwin_surface_config, force_format) - 4usize];
+    ["Offset of field: emgpu_emwin_surface_config::min_texture_count"]
+        [::std::mem::offset_of!(emgpu_emwin_surface_config, min_texture_count) - 8usize];
+    ["Offset of field: emgpu_emwin_surface_config::usage"]
+        [::std::mem::offset_of!(emgpu_emwin_surface_config, usage) - 12usize];
+    ["Offset of field: emgpu_emwin_surface_config::window"]
+        [::std::mem::offset_of!(emgpu_emwin_surface_config, window) - 16usize];
+};
+#[doc = " @brief Function pointer type for creating a ember_window surface.\n\n @param device GPU device handle.\n @param allocator Memory allocator used for internal allocations.\n @param config ember_window surface creation parameters.\n @param out_surface Output GPU surface object.\n\n @return Ember result code; returns `EMBER_RESULT_OK` if succeeds."]
+pub type PFN_create_emwin_surface = ::std::option::Option<
+    unsafe extern "C" fn(
+        device: *mut emgpu_device,
+        allocator: *mut em_allocator,
+        config: *mut emgpu_emwin_surface_config,
+        out_surface: *mut emgpu_surface,
+    ) -> em_result,
+>;
+#[doc = " @brief ember_window surface extension API interface.\n\n Contains function pointers and internal state required to create\n and manage ember-presentable GPU surfaces."]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct emgpu_emwin_surface_ext {
+    #[doc = " @brief Creates a ember_window surface backed by the GPU device."]
+    pub create_surface: PFN_create_emwin_surface,
+    #[doc = " @brief Minimum amount of textures a GPU surface can hold using this extension."]
+    pub min_texture_count: u32_,
+    #[doc = " @brief Minimum amount of textures a GPU surface can hold using this extension."]
+    pub max_texture_count: u32_,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of emgpu_emwin_surface_ext"][::std::mem::size_of::<emgpu_emwin_surface_ext>() - 16usize];
+    ["Alignment of emgpu_emwin_surface_ext"]
+        [::std::mem::align_of::<emgpu_emwin_surface_ext>() - 8usize];
+    ["Offset of field: emgpu_emwin_surface_ext::create_surface"]
+        [::std::mem::offset_of!(emgpu_emwin_surface_ext, create_surface) - 0usize];
+    ["Offset of field: emgpu_emwin_surface_ext::min_texture_count"]
+        [::std::mem::offset_of!(emgpu_emwin_surface_ext, min_texture_count) - 8usize];
+    ["Offset of field: emgpu_emwin_surface_ext::max_texture_count"]
+        [::std::mem::offset_of!(emgpu_emwin_surface_ext, max_texture_count) - 12usize];
+};
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct emgpu_emwin_surface_params {
+    pub desktop: *mut emwin_desktop,
+    pub out_extension: *mut emgpu_emwin_surface_ext,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of emgpu_emwin_surface_params"]
+        [::std::mem::size_of::<emgpu_emwin_surface_params>() - 16usize];
+    ["Alignment of emgpu_emwin_surface_params"]
+        [::std::mem::align_of::<emgpu_emwin_surface_params>() - 8usize];
+    ["Offset of field: emgpu_emwin_surface_params::desktop"]
+        [::std::mem::offset_of!(emgpu_emwin_surface_params, desktop) - 0usize];
+    ["Offset of field: emgpu_emwin_surface_params::out_extension"]
+        [::std::mem::offset_of!(emgpu_emwin_surface_params, out_extension) - 8usize];
+};
 #[doc = " @brief Configuration for a render buffer.\n\n Defines a GPU buffer such as a vertex, index,\n uniform, or storage buffer."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -1389,52 +1866,6 @@ unsafe extern "C" {
         instance_count: u32_,
     );
 }
-#[doc = " @brief Backend-agnostic GPU surface objects.\n\n Represents a backend-agnsotic object that connectes a platform surface."]
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct emgpu_surface {
-    #[doc = " @brief Backend-specific internal data."]
-    pub internal_data: *mut ::std::os::raw::c_void,
-    #[doc = " @brief Format of the pixel(s) attachted to the platform surface."]
-    pub pixel_format: emgpu_format,
-    #[doc = " @brief Number of owned images used for concurrent rendering."]
-    pub image_count: u32_,
-}
-#[allow(clippy::unnecessary_operation, clippy::identity_op)]
-const _: () = {
-    ["Size of emgpu_surface"][::std::mem::size_of::<emgpu_surface>() - 16usize];
-    ["Alignment of emgpu_surface"][::std::mem::align_of::<emgpu_surface>() - 8usize];
-    ["Offset of field: emgpu_surface::internal_data"]
-        [::std::mem::offset_of!(emgpu_surface, internal_data) - 0usize];
-    ["Offset of field: emgpu_surface::pixel_format"]
-        [::std::mem::offset_of!(emgpu_surface, pixel_format) - 8usize];
-    ["Offset of field: emgpu_surface::image_count"]
-        [::std::mem::offset_of!(emgpu_surface, image_count) - 12usize];
-};
-unsafe extern "C" {
-    #[doc = " @brief Resizes a rendering size to given size.\n\n @param device Pointer to the device instance.\n @param allocator Pointer to same allocator used to create surface.\n @param surface Surface to resize.\n @param new_size New size of surface. 0, 0 = minimized.\n @note Surface is not guarenteeed to be resized immediately; In\n       some backends surface is resized next frame it's rendered to."]
-    pub fn emgpu_surface_resize(
-        device: *mut emgpu_device,
-        allocator: *mut em_allocator,
-        surface: *mut emgpu_surface,
-        new_size: uvec2,
-    ) -> em_result;
-}
-unsafe extern "C" {
-    #[doc = " @brief Destroys a rendering surface.\n\n @param device Pointer to the device instance.\n @param allocator Allocator used to manage device memory.\n @param surface Surface to destroy."]
-    pub fn emgpu_surface_destroy(
-        device: *mut emgpu_device,
-        allocator: *mut em_allocator,
-        surface: *mut emgpu_surface,
-    );
-}
-unsafe extern "C" {
-    #[doc = " @brief Acquires the next available surface texture for rendering.\n\n Enqueues a presentation acquisition operation and returns a local\n reference to the acquired surface texture.\n\n @param command_buf Pointer to the command buffer.\n @param surface Surface to acquire the next presentation image from.\n\n @return A local framebuffer handle valid for the duration of the command buffer recording."]
-    pub fn emgpu_cmd_acquire_surface(
-        command_buf: *mut emgpu_command_buffer,
-        surface: *mut emgpu_surface,
-    ) -> emgpu_local_framebuffer;
-}
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct emplat_clock_timestamp {
@@ -1943,97 +2374,6 @@ unsafe extern "C" {
     #[doc = " @brief Retrieves detailed information about a timer.\n\n @param timer Pointer to the timer.\n\n @return A populated @ref emplat_timer_info structure describing the timer."]
     pub fn emplat_timer_get_info(timer: *mut emplat_timer) -> emplat_timer_info;
 }
-pub type emwin_window_id = u64_;
-pub type emwin_monitor_id = u64_;
-#[doc = " @brief Platform desktop handle.\n\n A desktop represents a connection to a display manager (e.g. Wayland or Win32).\n To create one you must have at least one window. The desktop controls state such\n as input state, event callbacks, joysticks and monitor control."]
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct emwin_desktop {
-    #[doc = " @brief Indicates whether the desktop was successfully initialized."]
-    pub initialized: b8,
-    #[doc = " @brief Platform-specific display state."]
-    pub internal_context: *mut ::std::os::raw::c_void,
-}
-#[allow(clippy::unnecessary_operation, clippy::identity_op)]
-const _: () = {
-    ["Size of emwin_desktop"][::std::mem::size_of::<emwin_desktop>() - 16usize];
-    ["Alignment of emwin_desktop"][::std::mem::align_of::<emwin_desktop>() - 8usize];
-    ["Offset of field: emwin_desktop::initialized"]
-        [::std::mem::offset_of!(emwin_desktop, initialized) - 0usize];
-    ["Offset of field: emwin_desktop::internal_context"]
-        [::std::mem::offset_of!(emwin_desktop, internal_context) - 8usize];
-};
-#[doc = " @brief Describes a physical display monitor."]
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct emwin_monitor {
-    #[doc = " @brief Position of the monitor in compositor space."]
-    pub position: uvec2,
-    #[doc = " @brief Physical dimensions of the monitor in millimeters."]
-    pub physical_size: uvec2,
-    #[doc = " @brief Logical dimensions of the monitor in pixels."]
-    pub size: uvec2,
-    #[doc = " @brief Subpixel layout of the monitor."]
-    pub subpixel: i32_,
-    #[doc = " @brief Manufacturer name."]
-    pub make: *const ::std::os::raw::c_char,
-    #[doc = " @brief Model name."]
-    pub model: *const ::std::os::raw::c_char,
-    #[doc = " @brief Unique output name assigned by the compositor."]
-    pub name: *const ::std::os::raw::c_char,
-    #[doc = " @brief Transform applied to the monitor."]
-    pub transform: i32_,
-    #[doc = " @brief Unique identifier for the monitor."]
-    pub id: emwin_monitor_id,
-}
-#[allow(clippy::unnecessary_operation, clippy::identity_op)]
-const _: () = {
-    ["Size of emwin_monitor"][::std::mem::size_of::<emwin_monitor>() - 72usize];
-    ["Alignment of emwin_monitor"][::std::mem::align_of::<emwin_monitor>() - 8usize];
-    ["Offset of field: emwin_monitor::position"]
-        [::std::mem::offset_of!(emwin_monitor, position) - 0usize];
-    ["Offset of field: emwin_monitor::physical_size"]
-        [::std::mem::offset_of!(emwin_monitor, physical_size) - 8usize];
-    ["Offset of field: emwin_monitor::size"][::std::mem::offset_of!(emwin_monitor, size) - 16usize];
-    ["Offset of field: emwin_monitor::subpixel"]
-        [::std::mem::offset_of!(emwin_monitor, subpixel) - 24usize];
-    ["Offset of field: emwin_monitor::make"][::std::mem::offset_of!(emwin_monitor, make) - 32usize];
-    ["Offset of field: emwin_monitor::model"]
-        [::std::mem::offset_of!(emwin_monitor, model) - 40usize];
-    ["Offset of field: emwin_monitor::name"][::std::mem::offset_of!(emwin_monitor, name) - 48usize];
-    ["Offset of field: emwin_monitor::transform"]
-        [::std::mem::offset_of!(emwin_monitor, transform) - 56usize];
-    ["Offset of field: emwin_monitor::id"][::std::mem::offset_of!(emwin_monitor, id) - 64usize];
-};
-unsafe extern "C" {
-    #[doc = " Polls for the next pending desktop event without blocking.\n\n If an event is available, it is written to @p out_event and a success\n result is returned. If no events are pending, the function returns\n immediately with a result indicating that no event was available.\n\n @param desktop The desktop instance to poll.\n @param out_event Receives the next event if one is available.\n\n @return A Ember result code indicating success, no pending events, or an error."]
-    pub fn emwin_poll_events(
-        desktop: *mut emwin_desktop,
-        out_event: *mut emwin_desktop_event,
-    ) -> em_result;
-}
-unsafe extern "C" {
-    #[doc = " Waits until the next desktop event becomes available.\n\n This function blocks the calling thread until an event is available or\n an error occurs. The received event is written to @p out_event.\n\n @param desktop The desktop instance to wait on.\n @param out_event Receives the next event.\n\n @return A Ember result code indicating success or an error."]
-    pub fn emwin_wait_events(
-        desktop: *mut emwin_desktop,
-        out_event: *mut emwin_desktop_event,
-    ) -> em_result;
-}
-unsafe extern "C" {
-    #[doc = " @brief Put UTF-8 text into the clipboard.\n\n @param text The text to store in the clipboard.\n @return Ember result code; returns `EMBER_RESULT_OK` if succeeds."]
-    pub fn emwin_set_clipboard_text(
-        desktop: *mut emwin_desktop,
-        text: *const ::std::os::raw::c_char,
-    ) -> em_result;
-}
-unsafe extern "C" {
-    #[doc = " @brief Get UTF-8 text from the clipboard.\n\n @return the clipboard text on success, or NULL on failure.\n\n @note The returned string must be freed manually using `mem_free`."]
-    pub fn emwin_get_clipboard_text(desktop: *mut emwin_desktop) -> *mut ::std::os::raw::c_char;
-}
-unsafe extern "C" {
-    #[doc = " @brief Query whether the clipboard exists and contains a non-empty text string.\n\n @return true if the clipboard has text, or false if it does not."]
-    pub fn emwin_has_clipboard_text(desktop: *mut emwin_desktop) -> b8;
-}
 #[doc = "< Informational message."]
 pub const emplat_popup_type_EMBER_POPUP_TYPE_INFO: emplat_popup_type = 0;
 #[doc = "< Warning message."]
@@ -2111,265 +2451,6 @@ unsafe extern "C" {
         default_colour: u32_,
         out_colour: *mut u32_,
     ) -> em_result;
-}
-#[doc = " @brief Describes a data format used by the ember_window subsystem.\n Any other format values outside this enum is not supported by\n the subsystem.\n\n Used for shm software rendering, window icons and custom cursors."]
-pub type emwin_format = u32_;
-#[doc = " @brief Configuration for a shared-memory pool."]
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct emwin_shm_pool_config {
-    #[doc = " @brief Size of the shared-memory pool in bytes."]
-    pub size: u64_,
-}
-#[allow(clippy::unnecessary_operation, clippy::identity_op)]
-const _: () = {
-    ["Size of emwin_shm_pool_config"][::std::mem::size_of::<emwin_shm_pool_config>() - 8usize];
-    ["Alignment of emwin_shm_pool_config"]
-        [::std::mem::align_of::<emwin_shm_pool_config>() - 8usize];
-    ["Offset of field: emwin_shm_pool_config::size"]
-        [::std::mem::offset_of!(emwin_shm_pool_config, size) - 0usize];
-};
-#[doc = " @brief Represents a shared-memory pool.\n\n A shared-memory pool owns the backing storage from which one or more\n shared-memory buffers can be created."]
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct emwin_shm_pool {
-    #[doc = " @brief Internal platform-specific pool data."]
-    pub internal_data: *mut ::std::os::raw::c_void,
-}
-#[allow(clippy::unnecessary_operation, clippy::identity_op)]
-const _: () = {
-    ["Size of emwin_shm_pool"][::std::mem::size_of::<emwin_shm_pool>() - 8usize];
-    ["Alignment of emwin_shm_pool"][::std::mem::align_of::<emwin_shm_pool>() - 8usize];
-    ["Offset of field: emwin_shm_pool::internal_data"]
-        [::std::mem::offset_of!(emwin_shm_pool, internal_data) - 0usize];
-};
-unsafe extern "C" {
-    #[doc = " @brief Creates a shared-memory pool.\n\n @param desktop Desktop connection the pool belongs to.\n @param allocator Allocator used to create the pool.\n @param config Pool configuration.\n @param out_pool Receives the created pool.\n\n @return Ember result code; returns `EMBER_RESULT_OK` if succeds."]
-    pub fn emwin_shm_pool_create(
-        desktop: *mut emwin_desktop,
-        allocator: *mut em_allocator,
-        config: *const emwin_shm_pool_config,
-        out_pool: *mut emwin_shm_pool,
-    ) -> em_result;
-}
-unsafe extern "C" {
-    #[doc = " @brief Destroys a shared-memory pool.\n\n All buffers created from the pool must be freed before destroying it.\n\n @param allocator Allocator used to create the pool.\n @param pool Pool to destroy."]
-    pub fn emwin_shm_pool_destroy(allocator: *mut em_allocator, pool: *mut emwin_shm_pool);
-}
-#[doc = " @brief Configuration for a shared-memory buffer."]
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct emwin_shm_buffer_config {
-    #[doc = " @brief Pixel format of the image stored in the buffer."]
-    pub image_format: emwin_format,
-    #[doc = " @brief Byte offset of the buffer within its shared-memory pool."]
-    pub offset: u64_,
-    #[doc = " @brief Size of the buffer in bytes."]
-    pub size: uvec2,
-    #[doc = " @brief Number of bytes between the start of consecutive image rows."]
-    pub stride: u64_,
-}
-#[allow(clippy::unnecessary_operation, clippy::identity_op)]
-const _: () = {
-    ["Size of emwin_shm_buffer_config"][::std::mem::size_of::<emwin_shm_buffer_config>() - 32usize];
-    ["Alignment of emwin_shm_buffer_config"]
-        [::std::mem::align_of::<emwin_shm_buffer_config>() - 8usize];
-    ["Offset of field: emwin_shm_buffer_config::image_format"]
-        [::std::mem::offset_of!(emwin_shm_buffer_config, image_format) - 0usize];
-    ["Offset of field: emwin_shm_buffer_config::offset"]
-        [::std::mem::offset_of!(emwin_shm_buffer_config, offset) - 8usize];
-    ["Offset of field: emwin_shm_buffer_config::size"]
-        [::std::mem::offset_of!(emwin_shm_buffer_config, size) - 16usize];
-    ["Offset of field: emwin_shm_buffer_config::stride"]
-        [::std::mem::offset_of!(emwin_shm_buffer_config, stride) - 24usize];
-};
-#[doc = " @brief Represents a shared-memory image buffer.\n\n A buffer describes a region of a shared-memory pool that can be used\n as pixel storage for a window surface."]
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct emwin_shm_buffer {
-    #[doc = " @brief Internal platform-specific buffer data."]
-    pub internal_data: *mut ::std::os::raw::c_void,
-    #[doc = " @brief Pointer to the buffer's CPU-accessible pixel data."]
-    pub buffer: *mut ::std::os::raw::c_void,
-    #[doc = " @brief Width and height of the image in pixels."]
-    pub size: uvec2,
-}
-#[allow(clippy::unnecessary_operation, clippy::identity_op)]
-const _: () = {
-    ["Size of emwin_shm_buffer"][::std::mem::size_of::<emwin_shm_buffer>() - 24usize];
-    ["Alignment of emwin_shm_buffer"][::std::mem::align_of::<emwin_shm_buffer>() - 8usize];
-    ["Offset of field: emwin_shm_buffer::internal_data"]
-        [::std::mem::offset_of!(emwin_shm_buffer, internal_data) - 0usize];
-    ["Offset of field: emwin_shm_buffer::buffer"]
-        [::std::mem::offset_of!(emwin_shm_buffer, buffer) - 8usize];
-    ["Offset of field: emwin_shm_buffer::size"]
-        [::std::mem::offset_of!(emwin_shm_buffer, size) - 16usize];
-};
-unsafe extern "C" {
-    #[doc = " @brief Allocates a shared-memory buffer from a pool.\n\n @param pool Pool from which the buffer is allocated.\n @param allocator Allocator used to create the buffer.\n @param config Buffer configuration.\n @param out_buffer Receives the allocated buffer.\n\n @return Ember result code; returns `EMBER_RESULT_OK` if succeds."]
-    pub fn emwin_shm_buffer_alloc(
-        pool: *mut emwin_shm_pool,
-        allocator: *mut em_allocator,
-        config: *const emwin_shm_buffer_config,
-        out_buffer: *mut emwin_shm_buffer,
-    ) -> em_result;
-}
-unsafe extern "C" {
-    #[doc = " @brief Frees a shared-memory buffer.\n\n @param pool Pool containing the buffer.\n @param allocator Allocator used to create the buffer.\n @param buffer Buffer to free."]
-    pub fn emwin_shm_buffer_free(
-        pool: *mut emwin_shm_pool,
-        allocator: *mut em_allocator,
-        buffer: *mut emwin_shm_buffer,
-    );
-}
-#[doc = "< Standard windowed mode."]
-pub const emwin_window_mode_EMBER_WINDOW_MODE_WINDOWED: emwin_window_mode = 0;
-#[doc = "< Window is created maximized."]
-pub const emwin_window_mode_EMBER_WINDOW_MODE_MAXIMIZED: emwin_window_mode = 1;
-#[doc = "< Fullscreen mode covering the entire display."]
-pub const emwin_window_mode_EMBER_WINDOW_MODE_FULLSCREEN: emwin_window_mode = 2;
-#[doc = " @brief Describes the display mode of a window."]
-pub type emwin_window_mode = ::std::os::raw::c_uint;
-#[doc = "< Window is visible immediately after creation."]
-pub const emwin_window_flags_EMBER_WINDOW_FLAGS_VISIBLE: emwin_window_flags = 1;
-#[doc = "< Window has no title bar / borders. User may want to render them manually."]
-pub const emwin_window_flags_EMBER_WINDOW_FLAGS_NOT_DECORATED: emwin_window_flags = 2;
-#[doc = "< Window can be resized by the user."]
-pub const emwin_window_flags_EMBER_WINDOW_FLAGS_LOCKED_SIZE: emwin_window_flags = 4;
-#[doc = "< Window has VSync enabled (metadata held for the GAPI)."]
-pub const emwin_window_flags_EMBER_WINDOW_FLAGS_VSYNC: emwin_window_flags = 8;
-#[doc = " @brief Bitmask flags controlling window creation behavior.\n\n These flags can be combined using bitwise OR."]
-pub type emwin_window_flags = ::std::os::raw::c_uint;
-#[doc = "< Cursor is visible and moves freely."]
-pub const emwin_cursor_mode_EMBER_CURSOR_MODE_NORMAL: emwin_cursor_mode = 0;
-#[doc = "< Cursor is hidden but not locked."]
-pub const emwin_cursor_mode_EMBER_CURSOR_MODE_HIDDEN: emwin_cursor_mode = 1;
-#[doc = "< Cursor is hidden and locked (relative input mode)."]
-pub const emwin_cursor_mode_EMBER_CURSOR_MODE_DISABLED: emwin_cursor_mode = 2;
-#[doc = " @brief Controls how the cursor behaves within the window."]
-pub type emwin_cursor_mode = ::std::os::raw::c_uint;
-#[doc = " @brief Configuration used when creating a window.\n\n This structure defines all parameters required to initialise a platform window,\n including size, position, display mode, and behavioral flags."]
-#[repr(C)]
-#[derive(Copy, Clone)]
-pub struct emwin_window_config {
-    #[doc = " @brief Initial window display mode."]
-    pub window_mode: emwin_window_mode,
-    #[doc = " @brief Initial cursor mode."]
-    pub cursor_mode: emwin_cursor_mode,
-    #[doc = " @brief Window creation flags."]
-    pub flags: emwin_window_flags,
-    #[doc = " @brief Window title as a UTF-8 encoded string."]
-    pub title: *const ::std::os::raw::c_char,
-    pub __bindgen_anon_1: emwin_window_config__bindgen_ty_1,
-    #[doc = " @brief Minimum client area size in pixels (0,0 = no limit)."]
-    pub min_size: uvec2,
-    #[doc = " @brief Maximum client area size in pixels (0,0 = no limit)."]
-    pub max_size: uvec2,
-    #[doc = " @brief Initial client area size in pixels."]
-    pub size: uvec2,
-}
-#[repr(C)]
-#[derive(Copy, Clone)]
-pub union emwin_window_config__bindgen_ty_1 {
-    #[doc = " @brief Absolute position in screen coordinates (pixels)."]
-    pub absolute_pos: uvec2,
-    #[doc = " @brief If TRUE, window will be centered on the selected display."]
-    pub centered_pos: b8,
-}
-#[allow(clippy::unnecessary_operation, clippy::identity_op)]
-const _: () = {
-    ["Size of emwin_window_config__bindgen_ty_1"]
-        [::std::mem::size_of::<emwin_window_config__bindgen_ty_1>() - 8usize];
-    ["Alignment of emwin_window_config__bindgen_ty_1"]
-        [::std::mem::align_of::<emwin_window_config__bindgen_ty_1>() - 4usize];
-    ["Offset of field: emwin_window_config__bindgen_ty_1::absolute_pos"]
-        [::std::mem::offset_of!(emwin_window_config__bindgen_ty_1, absolute_pos) - 0usize];
-    ["Offset of field: emwin_window_config__bindgen_ty_1::centered_pos"]
-        [::std::mem::offset_of!(emwin_window_config__bindgen_ty_1, centered_pos) - 0usize];
-};
-#[allow(clippy::unnecessary_operation, clippy::identity_op)]
-const _: () = {
-    ["Size of emwin_window_config"][::std::mem::size_of::<emwin_window_config>() - 56usize];
-    ["Alignment of emwin_window_config"][::std::mem::align_of::<emwin_window_config>() - 8usize];
-    ["Offset of field: emwin_window_config::window_mode"]
-        [::std::mem::offset_of!(emwin_window_config, window_mode) - 0usize];
-    ["Offset of field: emwin_window_config::cursor_mode"]
-        [::std::mem::offset_of!(emwin_window_config, cursor_mode) - 4usize];
-    ["Offset of field: emwin_window_config::flags"]
-        [::std::mem::offset_of!(emwin_window_config, flags) - 8usize];
-    ["Offset of field: emwin_window_config::title"]
-        [::std::mem::offset_of!(emwin_window_config, title) - 16usize];
-    ["Offset of field: emwin_window_config::min_size"]
-        [::std::mem::offset_of!(emwin_window_config, min_size) - 32usize];
-    ["Offset of field: emwin_window_config::max_size"]
-        [::std::mem::offset_of!(emwin_window_config, max_size) - 40usize];
-    ["Offset of field: emwin_window_config::size"]
-        [::std::mem::offset_of!(emwin_window_config, size) - 48usize];
-};
-#[doc = " @brief Platform window handle.\n\n Represents a platform window and its associated state.\n All platform-specific and renderer-specific details are stored internally\n and are opaque to the user."]
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct emwin_window {
-    #[doc = " @brief Current client area size in pixels. Updated on resize events."]
-    pub size: uvec2,
-    #[doc = " @brief Assigned ID of the window."]
-    pub id: emwin_window_id,
-    #[doc = " @brief Current window title.\n\n This string is owned by the window and may be reallocated when changed."]
-    pub title: *mut ::std::os::raw::c_char,
-    #[doc = " @brief Owner desktop object, represents a connection to the WM."]
-    pub desktop: *mut emwin_desktop,
-    #[doc = " @brief Platform-specific window state."]
-    pub internal_context: *mut ::std::os::raw::c_void,
-}
-#[allow(clippy::unnecessary_operation, clippy::identity_op)]
-const _: () = {
-    ["Size of emwin_window"][::std::mem::size_of::<emwin_window>() - 40usize];
-    ["Alignment of emwin_window"][::std::mem::align_of::<emwin_window>() - 8usize];
-    ["Offset of field: emwin_window::size"][::std::mem::offset_of!(emwin_window, size) - 0usize];
-    ["Offset of field: emwin_window::id"][::std::mem::offset_of!(emwin_window, id) - 8usize];
-    ["Offset of field: emwin_window::title"][::std::mem::offset_of!(emwin_window, title) - 16usize];
-    ["Offset of field: emwin_window::desktop"]
-        [::std::mem::offset_of!(emwin_window, desktop) - 24usize];
-    ["Offset of field: emwin_window::internal_context"]
-        [::std::mem::offset_of!(emwin_window, internal_context) - 32usize];
-};
-unsafe extern "C" {
-    #[doc = " @brief Creates and opens a window.\n\n Initialises a platform window using the provided configuration and writes\n the resulting state to @p out_window.\n\n @param allocator Allocator used for internal allocations.\n @param config Pointer to the window configuration.\n @param monitor Monitor to assign window to.\n @param out_window Pointer to the window to initialise.\n @param out_desktop Pointer to desktop, lazyily initialises.\n @return Ember result code; returns `EMBER_RESULT_OK` if succeeds.\n\n @note Passing a valid @p out_desktop is strongly recommended to avoid\n       reinitialising shared global platform state."]
-    pub fn emwin_window_open(
-        allocator: *mut em_allocator,
-        config: *const emwin_window_config,
-        monitor: emwin_monitor_id,
-        out_window: *mut emwin_window,
-        out_desktop: *mut *mut emwin_desktop,
-    ) -> em_result;
-}
-unsafe extern "C" {
-    #[doc = " @brief Forces closing a window and destroys all OS resources.\n\n Releases all platform and renderer resources associated with the window and immediatly closes.\n\n @param window Pointer to the window to close."]
-    pub fn emwin_window_close(allocator: *mut em_allocator, window: *mut emwin_window);
-}
-unsafe extern "C" {
-    #[doc = " @brief Request the closure of window.\n\n This submits a window close event to the desktop-wide event queue.\n\n @param window Pointer to the window to close.\n\n @note This is different to @ref emwin_window_close\n       as it only notifies your application"]
-    pub fn emwin_window_request_close(window: *mut emwin_window);
-}
-unsafe extern "C" {
-    #[doc = " @brief Set visbility of the window.\n\n This immediately shows / hides the window when called.\n\n @param window Pointer to the window.\n @param visible Whetever to show or hide."]
-    pub fn emwin_window_set_visible(window: *mut emwin_window, visible: b8);
-}
-unsafe extern "C" {
-    #[doc = " @brief Checks whether the window is visible or hidden.\n\n @param window Pointer to the window.\n @return TRUE if the window is visible; otherwise FALSE."]
-    pub fn emwin_window_visible(window: *const emwin_window) -> b8;
-}
-unsafe extern "C" {
-    #[doc = " @brief Attaches a shared-memory buffer to a window.\n\n The buffer is used as the window's backing pixel storage. The specified\n offset determines the position within the window at which the buffer is\n attached.\n\n @param window Window to attach the buffer to.\n @param buffer Shared-memory buffer to attach.\n @param offset Offset within the window at which to attach the buffer.\n\n @return Ember result code; returns `EMBER_RESULT_OK` if succeeds."]
-    pub fn emwin_window_attach(
-        window: *mut emwin_window,
-        buffer: *mut emwin_shm_buffer,
-        offset: uvec2,
-    ) -> em_result;
-}
-unsafe extern "C" {
-    #[doc = " @brief Marks a region of a window as damaged.\n\n The damaged region indicates an area whose contents have changed and\n should be presented to the desktop.\n\n @param window Window whose contents were modified.\n @param offset Offset of the damaged region within the window.\n @param size Size of the damaged region.\n\n @return Ember result code; returns `EMBER_RESULT_OK` if succeeds."]
-    pub fn emwin_window_damage(window: *mut emwin_window, offset: uvec2, size: uvec2) -> em_result;
 }
 pub const emwin_key_code_EMBER_KEY_SPACE: emwin_key_code = 0;
 pub const emwin_key_code_EMBER_KEY_APOSTROPHE: emwin_key_code = 1;

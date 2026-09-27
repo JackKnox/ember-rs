@@ -7,7 +7,7 @@ use std::ffi::{CStr, CString};
 use bitflags::bitflags;
 
 pub struct Desktop {
-    sys: *mut ffi::emwin_desktop,
+    pub(crate) sys: *mut ffi::emwin_desktop,
 }
 
 pub struct Monitor {
@@ -221,7 +221,7 @@ pub struct Window {
     sys: ffi::emwin_window,
 }
 
-impl<'a> Default for WindowConfig<'a> {
+impl Default for WindowConfig<'_> {
     fn default() -> Self {
         WindowConfig {
             window_mode: WindowMode::Windowed,

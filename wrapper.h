@@ -11,6 +11,7 @@
 #include <ember/core/version_types.h>
 
 // GPU domain
+#include <ember/gpu/ext/emwin_surface.h>
 #include <ember/gpu/command_buffer.h>
 #include <ember/gpu/compute.h>
 #include <ember/gpu/device.h>

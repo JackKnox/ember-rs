@@ -106,6 +106,10 @@ impl Version {
         Self((major << 22) | (minor << 12) | patch)
     }
 
+    pub const fn ember_rs() -> Self {
+        Version::new(0, 6, 0)
+    }
+
     pub const fn major(self) -> u32 {
         self.0 >> 22
     }

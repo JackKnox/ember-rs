@@ -1,5 +1,6 @@
 use crate::core::{Allocator, Result, Version};
 use crate::ffi;
+use crate::window::Desktop;
 
 use bitflags::bitflags;
 
@@ -38,13 +39,14 @@ pub struct DeviceCapabilities<'a> {
     // pub vendor_signiture: VendorSigniture,
 }
 
-pub struct DeviceConfig {
+pub struct DeviceConfig<'a> {
     pub debug_name: String,
     pub frame_allocator: Allocator,
     pub app_version: Version,
     pub required_modes: DeviceMode,
     pub optional_modes: DeviceMode,
-    pub frames_in_flight: u32, //extensions: Vec<Box<dyn DeviceExtension>>
+    pub frames_in_flight: u32, 
+    extensions: &'a[Box<dyn Extension>]
 }
 
 pub struct Queue(ffi::emgpu_queue);
@@ -53,7 +55,9 @@ pub struct Device {
     sys: ffi::emgpu_device,
 }
 
-impl Default for DeviceConfig {
+trait Extension {}
+
+impl Default for DeviceConfig<'_> {
     fn default() -> Self {
         DeviceConfig {
             debug_name: String::from("ember-rs GPU device"),
@@ -62,6 +66,7 @@ impl Default for DeviceConfig {
             required_modes: DeviceMode::Raster,
             optional_modes: DeviceMode::empty(),
             frames_in_flight: 3,
+            extensions: &[],
         }
     }
 }
@@ -111,6 +116,20 @@ impl Device {
         todo!()
     }
 
+    pub fn open_queue(&mut self) -> Result<Queue> {
+        let mut queue: ffi::emgpu_queue = 0;
+        let result = unsafe { 
+            ffi::emgpu_device_open_queue(
+                &mut self.sys as *mut ffi::emgpu_device, 
+                &mut queue) };
+
+        if result != ffi::em_result_EMBER_RESULT_OK {
+            return Err(result.into());
+        }
+
+        Ok(Queue { 0: queue.into() })
+    }
+
     pub fn submit(&mut self, command_buffer: CommandBuffer) -> Result<()> {
         todo!()
     }
@@ -118,4 +137,48 @@ impl Device {
 
 pub struct CommandBuffer {
     sys: ffi::emgpu_command_buffer,
+}
+
+pub struct EmwinSurfaceExt {
+    pub sys: ffi::emgpu_extension_desc,
+    pub data: ffi::emgpu_emwin_surface_ext,
+}
+
+impl Extension for EmwinSurfaceExt {}
+
+#[repr(C)]
+struct EmwinSurfaceParams {
+    desktop: *const ffi::emwin_desktop,
+    out_extension: *mut ffi::emgpu_emwin_surface_ext,
+}
+
+impl EmwinSurfaceExt {
+    pub fn register(desktop: &Desktop) -> Self {
+        let mut ext = Self {
+            sys: ffi::emgpu_extension_desc {
+                name: b"EMGPU_EXT_emwin_surface\0".as_ptr() as *const i8,
+                version: Version::ember_rs().into(),
+                optional: false,
+                user_data: ffi::emgpu_extension_user_data {
+                    bytes: [0; 16],
+                },
+            },
+            data: unsafe { std::mem::zeroed() },
+        };
+
+        let params = EmwinSurfaceParams {
+            desktop: desktop.sys as *const ffi::emwin_desktop,
+            out_extension: &mut ext.data as *mut ffi::emgpu_emwin_surface_ext,
+        };
+
+        unsafe {
+            std::ptr::copy_nonoverlapping(
+                &params as *const _ as *const u8,
+                ext.sys.user_data.bytes.as_mut_ptr(),
+                std::mem::size_of::<EmwinSurfaceParams>(),
+            );
+        }
+
+        ext
+    }
 }
