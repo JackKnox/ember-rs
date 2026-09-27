@@ -62,8 +62,23 @@ impl fmt::Display for Error {
 }
 
 impl From<u32> for Error {
-    fn from(_: u32) -> Self {
-        todo!()
+    fn from(value: u32) -> Self {
+        match value {
+            ffi::em_result_EMBER_RESULT_TIMEOUT => Self::Timeout,
+            ffi::em_result_EMBER_RESULT_UNINITIALIZED => Self::Uninitilalized,
+            ffi::em_result_EMBER_RESULT_INVALID_ENUM => Self::InvalidEnum,
+            ffi::em_result_EMBER_RESULT_INVALID_VALUE => Self::InvalidValue,
+            ffi::em_result_EMBER_RESULT_UNSUPPORTED_FORMAT => Self::UnsupportedFormat,
+            ffi::em_result_EMBER_RESULT_OUT_OF_MEMORY_CPU => Self::OutOfMemoryCPU,
+            ffi::em_result_EMBER_RESULT_OUT_OF_MEMORY_GPU => Self::OutOfMemoryGPU,
+            ffi::em_result_EMBER_RESULT_UNAVAILABLE_API => Self::UnavailableAPI,
+            ffi::em_result_EMBER_RESULT_UNIMPLEMENTED => Self::Unimplemented,
+            ffi::em_result_EMBER_RESULT_VALIDATION_FAILED => Self::ValidationFailed,
+            ffi::em_result_EMBER_RESULT_IN_USE => Self::InUse,
+            ffi::em_result_EMBER_RESULT_PERMISSION_DENIED => Self::PermissionDenied,
+            ffi::em_result_EMBER_RESULT_UNKNOWN => Self::Unknown,
+            _ => Self::Unknown,
+        }
     }
 }
 
