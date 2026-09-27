@@ -1,6 +1,5 @@
 use crate::core::{Allocator, Result, Version};
 use crate::ffi;
-use crate::window::Desktop;
 
 use bitflags::bitflags;
 
@@ -46,7 +45,7 @@ pub struct DeviceConfig<'a> {
     pub required_modes: DeviceMode,
     pub optional_modes: DeviceMode,
     pub frames_in_flight: u32, 
-    extensions: &'a[Box<dyn Extension>]
+    pub extensions: &'a[Box<dyn Extension>]
 }
 
 pub struct Queue(ffi::emgpu_queue);
@@ -139,46 +138,63 @@ pub struct CommandBuffer {
     sys: ffi::emgpu_command_buffer,
 }
 
-pub struct EmwinSurfaceExt {
-    pub sys: ffi::emgpu_extension_desc,
-    pub data: ffi::emgpu_emwin_surface_ext,
-}
+////////////////////////////////////////////////
 
-impl Extension for EmwinSurfaceExt {}
+pub mod ext {
+    use crate::core::{Version, Allocator};
+    use crate::gpu::{Device, Extension};
+    use crate::window::Desktop;
+    use crate::ffi;
 
-#[repr(C)]
-struct EmwinSurfaceParams {
-    desktop: *const ffi::emwin_desktop,
-    out_extension: *mut ffi::emgpu_emwin_surface_ext,
-}
+    pub struct EmwinSurfaceExt {
+        pub sys: ffi::emgpu_extension_desc,
+        pub data: ffi::emgpu_emwin_surface_ext,
+    }
 
-impl EmwinSurfaceExt {
-    pub fn register(desktop: &Desktop) -> Self {
-        let mut ext = Self {
-            sys: ffi::emgpu_extension_desc {
-                name: b"EMGPU_EXT_emwin_surface\0".as_ptr() as *const i8,
-                version: Version::ember_rs().into(),
-                optional: false,
-                user_data: ffi::emgpu_extension_user_data {
-                    bytes: [0; 16],
+    impl Extension for EmwinSurfaceExt {}
+
+    #[repr(C)]
+    struct EmwinSurfaceParams {
+        desktop: *const ffi::emwin_desktop,
+        out_extension: *mut ffi::emgpu_emwin_surface_ext,
+    }
+
+    pub struct EmwinSurfaceConfig {
+
+    }
+
+    impl EmwinSurfaceExt {
+        pub fn register(desktop: &Desktop) -> Self {
+            let mut ext = Self {
+                sys: ffi::emgpu_extension_desc {
+                    name: b"EMGPU_EXT_emwin_surface\0".as_ptr() as *const i8,
+                    version: Version::ember_rs().into(),
+                    optional: false,
+                    user_data: ffi::emgpu_extension_user_data {
+                        bytes: [0; 16],
+                    },
                 },
-            },
-            data: unsafe { std::mem::zeroed() },
-        };
+                data: unsafe { std::mem::zeroed() },
+            };
 
-        let params = EmwinSurfaceParams {
-            desktop: desktop.sys as *const ffi::emwin_desktop,
-            out_extension: &mut ext.data as *mut ffi::emgpu_emwin_surface_ext,
-        };
+            let params = EmwinSurfaceParams {
+                desktop: desktop.sys as *const ffi::emwin_desktop,
+                out_extension: &mut ext.data as *mut ffi::emgpu_emwin_surface_ext,
+            };
 
-        unsafe {
-            std::ptr::copy_nonoverlapping(
-                &params as *const _ as *const u8,
-                ext.sys.user_data.bytes.as_mut_ptr(),
-                std::mem::size_of::<EmwinSurfaceParams>(),
-            );
+            unsafe {
+                std::ptr::copy_nonoverlapping(
+                    &params as *const _ as *const u8,
+                    ext.sys.user_data.bytes.as_mut_ptr(),
+                    std::mem::size_of::<EmwinSurfaceParams>(),
+                );
+            }
+
+            ext
         }
 
-        ext
+        pub fn create_surface(&self, device: &Device, allocator: &Allocator, config: &EmwinSurfaceConfig) {
+            todo!()
+        }
     }
 }
