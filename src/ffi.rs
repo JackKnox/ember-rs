@@ -1116,7 +1116,7 @@ pub struct emgpu_emwin_surface_config {
     #[doc = " @brief Usage of the outputted textures."]
     pub usage: emgpu_texture_usage,
     #[doc = " @brief ember_window window to attach GPU surface to."]
-    pub window: *mut emwin_window,
+    pub window: *const emwin_window,
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {

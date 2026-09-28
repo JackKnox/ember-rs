@@ -94,8 +94,7 @@ impl Device {
             ffi::emgpu_device_init(
                 allocator.sys.get() as *mut ffi::em_allocator,
                 &c_config as *const ffi::emgpu_device_config,
-                &mut device.sys as *mut ffi::emgpu_device,
-            )
+                &mut device.sys as *mut ffi::emgpu_device)
         };
 
         if result != ffi::em_result_EMBER_RESULT_OK {
@@ -253,8 +252,30 @@ pub mod ext {
             ext
         }
 
-        pub fn create_surface(&self, device: &Device, allocator: &Allocator, config: &EmwinSurfaceConfig) -> Result<Surface> {
-            todo!()
+        pub fn create_surface(&self, device: &mut Device, allocator: &Allocator, config: &EmwinSurfaceConfig) -> Result<Surface> {
+            let mut c_config = ffi::emgpu_emwin_surface_config {
+                preferred_format: config.preferred_format.0.0,
+                force_format: config.force_format,
+                min_texture_count: config.min_texture_count,
+                usage: config.usage.bits(),
+                window: &config.window.sys as *const ffi::emwin_window,
+            };
+            let mut surface = Surface {
+                sys: unsafe { std::mem::zeroed() },
+            };
+
+            let result = unsafe {
+                (self.data.create_surface.unwrap())(
+                    &mut device.sys as *mut ffi::emgpu_device,
+                    allocator.sys.get() as *mut ffi::em_allocator,
+                    &mut c_config as *mut ffi::emgpu_emwin_surface_config,
+                    &mut surface.sys as *mut ffi::emgpu_surface) 
+            };
+            
+            if result != ffi::em_result_EMBER_RESULT_OK {
+                return Err(result.into());
+            }
+            Ok(surface)
         }
     }
 }

@@ -218,7 +218,7 @@ pub struct WindowConfig<'a> {
 }
 
 pub struct Window {
-    sys: ffi::emwin_window,
+    pub(crate) sys: ffi::emwin_window,
 }
 
 impl Default for WindowConfig<'_> {
