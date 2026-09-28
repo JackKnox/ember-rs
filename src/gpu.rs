@@ -1,4 +1,5 @@
 use crate::core::{Allocator, Result, Version};
+use crate::core::{Format, FormatFlags, DataType};
 use crate::ffi;
 
 use bitflags::bitflags;
@@ -138,12 +139,67 @@ pub struct CommandBuffer {
     sys: ffi::emgpu_command_buffer,
 }
 
+pub struct Surface {
+    pub sys: ffi::emgpu_surface,
+}
+
+pub enum FilterType {
+    Nearest,
+    Linear
+}
+
+pub enum AddressMode {
+    Repeat, 
+    MirroredRepeat,
+    ClampToEdge,
+    ClampToBorder,
+    MirrorClampToEdge,
+}
+
+bitflags! {
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+    pub struct TextureUsage: u32 {
+        const Storage       = 0b00000001;
+        const Sampled       = 0b00000010;
+        const TransferSrc   = 0b00000100;
+        const TransferDst   = 0b00001000;
+        const AttachmentDst = 0b00010000;
+
+    }
+}
+
+pub struct TextureConfig {
+    pub image_format: GpuFormat,
+    pub filter_type: FilterType,
+    pub address_mode: AddressMode,
+    pub usage: TextureUsage,
+    pub size: [u64; 2],
+    pub max_anisotropy: f32,
+}
+
+pub struct Texture {
+    sys: ffi::emgpu_texture,
+}
+
+impl Default for TextureConfig {
+    fn default() -> Self {
+        TextureConfig {
+            image_format: GpuFormat::RGBA8_SRGB,
+            filter_type: FilterType::Nearest,
+            address_mode: AddressMode::Repeat,
+            usage: TextureUsage::Sampled,
+            size: [ 0, 0 ],
+            max_anisotropy: 0.0
+        }
+    }
+}
+
 ////////////////////////////////////////////////
 
 pub mod ext {
-    use crate::core::{Version, Allocator};
-    use crate::gpu::{Device, Extension};
-    use crate::window::Desktop;
+    use crate::core::{Version, Allocator, Result};
+    use crate::gpu::{Device, Extension, GpuFormat, Surface, TextureUsage};
+    use crate::window::{Window, Desktop};
     use crate::ffi;
 
     pub struct EmwinSurfaceExt {
@@ -159,8 +215,12 @@ pub mod ext {
         out_extension: *mut ffi::emgpu_emwin_surface_ext,
     }
 
-    pub struct EmwinSurfaceConfig {
-
+    pub struct EmwinSurfaceConfig<'a> {
+        pub preferred_format: GpuFormat,
+        pub force_format: bool,
+        pub min_texture_count: u32,
+        pub usage: TextureUsage,
+        pub window: &'a Window,
     }
 
     impl EmwinSurfaceExt {
@@ -193,8 +253,279 @@ pub mod ext {
             ext
         }
 
-        pub fn create_surface(&self, device: &Device, allocator: &Allocator, config: &EmwinSurfaceConfig) {
+        pub fn create_surface(&self, device: &Device, allocator: &Allocator, config: &EmwinSurfaceConfig) -> Result<Surface> {
             todo!()
         }
+    }
+}
+
+#[repr(transparent)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+pub struct GpuFormat(pub Format);
+
+impl GpuFormat {
+    pub const UNDEFINED: Self = Self(Format(0));
+
+    /* 8-bit integer */
+
+    pub const R8_UINT: Self =
+        Self(Format::new(DataType::Uint, 8, 1, FormatFlags::empty()));
+    pub const RG8_UINT: Self =
+        Self(Format::new(DataType::Uint, 8, 2, FormatFlags::empty()));
+    pub const RGB8_UINT: Self =
+        Self(Format::new(DataType::Uint, 8, 3, FormatFlags::empty()));
+    pub const RGBA8_UINT: Self =
+        Self(Format::new(DataType::Uint, 8, 4, FormatFlags::empty()));
+
+    pub const R8_SINT: Self =
+        Self(Format::new(DataType::Sint, 8, 1, FormatFlags::empty()));
+    pub const RG8_SINT: Self =
+        Self(Format::new(DataType::Sint, 8, 2, FormatFlags::empty()));
+    pub const RGB8_SINT: Self =
+        Self(Format::new(DataType::Sint, 8, 3, FormatFlags::empty()));
+    pub const RGBA8_SINT: Self =
+        Self(Format::new(DataType::Sint, 8, 4, FormatFlags::empty()));
+
+    /* 8-bit normalized */
+
+    pub const R8_UNORM: Self =
+        Self(Format::new(DataType::Uint, 8, 1, FormatFlags::NORMALIZED));
+    pub const RG8_UNORM: Self =
+        Self(Format::new(DataType::Uint, 8, 2, FormatFlags::NORMALIZED));
+    pub const RGB8_UNORM: Self =
+        Self(Format::new(DataType::Uint, 8, 3, FormatFlags::NORMALIZED));
+    pub const RGBA8_UNORM: Self =
+        Self(Format::new(DataType::Uint, 8, 4, FormatFlags::NORMALIZED));
+
+    pub const R8_SNORM: Self =
+        Self(Format::new(DataType::Sint, 8, 1, FormatFlags::NORMALIZED));
+    pub const RG8_SNORM: Self =
+        Self(Format::new(DataType::Sint, 8, 2, FormatFlags::NORMALIZED));
+    pub const RGB8_SNORM: Self =
+        Self(Format::new(DataType::Sint, 8, 3, FormatFlags::NORMALIZED));
+    pub const RGBA8_SNORM: Self =
+        Self(Format::new(DataType::Sint, 8, 4, FormatFlags::NORMALIZED));
+
+    /* 16-bit */
+
+    pub const R16_UINT: Self =
+        Self(Format::new(DataType::Uint, 16, 1, FormatFlags::empty()));
+    pub const RG16_UINT: Self =
+        Self(Format::new(DataType::Uint, 16, 2, FormatFlags::empty()));
+    pub const RGB16_UINT: Self =
+        Self(Format::new(DataType::Uint, 16, 3, FormatFlags::empty()));
+    pub const RGBA16_UINT: Self =
+        Self(Format::new(DataType::Uint, 16, 4, FormatFlags::empty()));
+
+    pub const R16_SINT: Self =
+        Self(Format::new(DataType::Sint, 16, 1, FormatFlags::empty()));
+    pub const RG16_SINT: Self =
+        Self(Format::new(DataType::Sint, 16, 2, FormatFlags::empty()));
+    pub const RGB16_SINT: Self =
+        Self(Format::new(DataType::Sint, 16, 3, FormatFlags::empty()));
+    pub const RGBA16_SINT: Self =
+        Self(Format::new(DataType::Sint, 16, 4, FormatFlags::empty()));
+
+    pub const R16_FLOAT: Self =
+        Self(Format::new(DataType::Float, 16, 1, FormatFlags::empty()));
+    pub const RG16_FLOAT: Self =
+        Self(Format::new(DataType::Float, 16, 2, FormatFlags::empty()));
+    pub const RGB16_FLOAT: Self =
+        Self(Format::new(DataType::Float, 16, 3, FormatFlags::empty()));
+    pub const RGBA16_FLOAT: Self =
+        Self(Format::new(DataType::Float, 16, 4, FormatFlags::empty()));
+
+    /* 32-bit */
+
+    pub const R32_UINT: Self =
+        Self(Format::new(DataType::Uint, 32, 1, FormatFlags::empty()));
+    pub const RG32_UINT: Self =
+        Self(Format::new(DataType::Uint, 32, 2, FormatFlags::empty()));
+    pub const RGB32_UINT: Self =
+        Self(Format::new(DataType::Uint, 32, 3, FormatFlags::empty()));
+    pub const RGBA32_UINT: Self =
+        Self(Format::new(DataType::Uint, 32, 4, FormatFlags::empty()));
+
+    pub const R32_SINT: Self =
+        Self(Format::new(DataType::Sint, 32, 1, FormatFlags::empty()));
+    pub const RG32_SINT: Self =
+        Self(Format::new(DataType::Sint, 32, 2, FormatFlags::empty()));
+    pub const RGB32_SINT: Self =
+        Self(Format::new(DataType::Sint, 32, 3, FormatFlags::empty()));
+    pub const RGBA32_SINT: Self =
+        Self(Format::new(DataType::Sint, 32, 4, FormatFlags::empty()));
+
+    pub const R32_FLOAT: Self =
+        Self(Format::new(DataType::Float, 32, 1, FormatFlags::empty()));
+    pub const RG32_FLOAT: Self =
+        Self(Format::new(DataType::Float, 32, 2, FormatFlags::empty()));
+    pub const RGB32_FLOAT: Self =
+        Self(Format::new(DataType::Float, 32, 3, FormatFlags::empty()));
+    pub const RGBA32_FLOAT: Self =
+        Self(Format::new(DataType::Float, 32, 4, FormatFlags::empty()));
+
+    /* sRGB */
+
+    pub const R8_SRGB: Self =
+        Self(Format::new(DataType::Uint, 8, 1, FormatFlags::SRGB));
+    pub const RG8_SRGB: Self =
+        Self(Format::new(DataType::Uint, 8, 2, FormatFlags::SRGB));
+    pub const RGB8_SRGB: Self =
+        Self(Format::new(DataType::Uint, 8, 3, FormatFlags::SRGB));
+    pub const RGBA8_SRGB: Self =
+        Self(Format::new(DataType::Uint, 8, 4, FormatFlags::SRGB));
+
+    /* BGR / BGRA */
+
+    pub const BGR8_UNORM: Self =
+        Self(Format::new(
+            DataType::Uint,
+            8,
+            3,
+            FormatFlags::from_bits_retain(
+                FormatFlags::NORMALIZED.bits() | FormatFlags::BGRA.bits(),
+            ),
+        ));
+
+    pub const BGR8_SNORM: Self =
+        Self(Format::new(
+            DataType::Sint,
+            8,
+            3,
+            FormatFlags::from_bits_retain(
+                FormatFlags::NORMALIZED.bits() | FormatFlags::BGRA.bits(),
+            ),
+        ));
+
+    pub const BGR8_UINT: Self =
+        Self(Format::new(DataType::Uint, 8, 3, FormatFlags::BGRA));
+
+    pub const BGR8_SINT: Self =
+        Self(Format::new(DataType::Sint, 8, 3, FormatFlags::BGRA));
+
+    pub const BGR8_SRGB: Self =
+        Self(Format::new(
+            DataType::Uint,
+            8,
+            3,
+            FormatFlags::from_bits_retain(
+                FormatFlags::SRGB.bits() | FormatFlags::BGRA.bits(),
+            ),
+        ));
+
+    pub const BGRA8_UNORM: Self =
+        Self(Format::new(
+            DataType::Uint,
+            8,
+            4,
+            FormatFlags::from_bits_retain(
+                FormatFlags::NORMALIZED.bits() | FormatFlags::BGRA.bits(),
+            ),
+        ));
+
+    pub const BGRA8_SNORM: Self =
+        Self(Format::new(
+            DataType::Sint,
+            8,
+            4,
+            FormatFlags::from_bits_retain(
+                FormatFlags::NORMALIZED.bits() | FormatFlags::BGRA.bits(),
+            ),
+        ));
+
+    pub const BGRA8_UINT: Self =
+        Self(Format::new(DataType::Uint, 8, 4, FormatFlags::BGRA));
+
+    pub const BGRA8_SINT: Self =
+        Self(Format::new(DataType::Sint, 8, 4, FormatFlags::BGRA));
+
+    pub const BGRA8_SRGB: Self =
+        Self(Format::new(
+            DataType::Uint,
+            8,
+            4,
+            FormatFlags::from_bits_retain(
+                FormatFlags::SRGB.bits() | FormatFlags::BGRA.bits(),
+            ),
+        ));
+
+    /* Depth / stencil */
+
+    pub const D16_UNORM: Self =
+        Self(Format::new(DataType::Uint, 16, 1, FormatFlags::DEPTH));
+
+    pub const D24_UNORM: Self =
+        Self(Format::new(DataType::Uint, 24, 1, FormatFlags::DEPTH));
+
+    pub const D32_FLOAT: Self =
+        Self(Format::new(DataType::Float, 32, 1, FormatFlags::DEPTH));
+
+    pub const D24_UNORM_S8_UINT: Self =
+        Self(Format::new(
+            DataType::Uint,
+            32,
+            2,
+            FormatFlags::from_bits_retain(
+                FormatFlags::DEPTH.bits() | FormatFlags::STENCIL.bits(),
+            ),
+        ));
+
+    pub const D32_FLOAT_S8_UINT: Self =
+        Self(Format::new(
+            DataType::Float,
+            40,
+            2,
+            FormatFlags::from_bits_retain(
+                FormatFlags::DEPTH.bits() | FormatFlags::STENCIL.bits(),
+            ),
+        ));
+
+    /* Vectors */
+
+    pub const VEC2_FLOAT32: Self =
+        Self(Format::new(DataType::Float, 32, 2, FormatFlags::empty()));
+    pub const VEC3_FLOAT32: Self =
+        Self(Format::new(DataType::Float, 32, 3, FormatFlags::empty()));
+    pub const VEC4_FLOAT32: Self =
+        Self(Format::new(DataType::Float, 32, 4, FormatFlags::empty()));
+
+    pub const VEC2_UINT32: Self =
+        Self(Format::new(DataType::Uint, 32, 2, FormatFlags::empty()));
+    pub const VEC3_UINT32: Self =
+        Self(Format::new(DataType::Uint, 32, 3, FormatFlags::empty()));
+    pub const VEC4_UINT32: Self =
+        Self(Format::new(DataType::Uint, 32, 4, FormatFlags::empty()));
+
+    pub const VEC2_SINT32: Self =
+        Self(Format::new(DataType::Sint, 32, 2, FormatFlags::empty()));
+    pub const VEC3_SINT32: Self =
+        Self(Format::new(DataType::Sint, 32, 3, FormatFlags::empty()));
+    pub const VEC4_SINT32: Self =
+        Self(Format::new(DataType::Sint, 32, 4, FormatFlags::empty()));
+}
+
+impl GpuFormat {
+    pub const fn format(self) -> Format {
+        self.0
+    }
+
+    pub const fn flags(self) -> FormatFlags {
+        self.0.flags()
+    }
+
+    pub const fn data_type(self) -> DataType {
+        self.0.data_type()
+    }
+
+    pub const fn bytes(self) -> u32 {
+        self.0.bytes()
+    }
+
+    pub const fn channels(self) -> u32 {
+        self.0.channels()
+    }
+
+    pub const fn size(self) -> u32 {
+        self.0.size()
     }
 }

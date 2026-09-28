@@ -144,3 +144,78 @@ impl From<Version> for u32 {
         version.0
     }
 }
+
+use bitflags::bitflags;
+
+#[repr(u32)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub enum DataType {
+    Uint = 0,
+    Sint = 1,
+    Float = 2,
+    Bool = 3,
+}
+
+bitflags! {
+    #[repr(transparent)]
+    #[derive(Debug, Copy, Clone, PartialEq, Eq)]
+    pub struct FormatFlags: u32 {
+        const NORMALIZED = 1 << 0;
+        const BGRA       = 1 << 1;
+        const SRGB       = 1 << 2;
+        const DEPTH      = 1 << 3;
+        const STENCIL    = 1 << 4;
+    }
+}
+
+#[repr(transparent)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+pub struct Format(pub u32);
+
+impl Format {
+    pub const UNDEFINED: Self = Self(0);
+
+    pub const fn new(
+        data_type: DataType,
+        bits: u32,
+        channels: u32,
+        flags: FormatFlags,
+    ) -> Self {
+        Self(
+            ((flags.bits() & 0xFF) << 24)
+                | ((data_type as u32 & 0xF) << 20)
+                | (((bits / 8) & 0xF) << 16)
+                | ((channels & 0xF) << 12),
+        )
+    }
+
+    pub const fn flags(self) -> FormatFlags {
+        FormatFlags::from_bits_retain((self.0 >> 24) & 0xFF)
+    }
+
+    pub const fn data_type(self) -> DataType {
+        match (self.0 >> 20) & 0xF {
+            0 => DataType::Uint,
+            1 => DataType::Sint,
+            2 => DataType::Float,
+            3 => DataType::Bool,
+            _ => unreachable!(),
+        }
+    }
+
+    pub const fn bytes(self) -> u32 {
+        ((self.0 >> 16) & 0xF) * 8
+    }
+
+    pub const fn channels(self) -> u32 {
+        (self.0 >> 12) & 0xF
+    }
+
+    pub const fn size(self) -> u32 {
+        self.bytes() * self.channels()
+    }
+
+    pub const fn bits(self) -> u32 {
+        self.size()
+    }
+}
