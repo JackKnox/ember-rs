@@ -46,7 +46,7 @@ pub struct DeviceConfig<'a> {
     pub required_modes: DeviceMode,
     pub optional_modes: DeviceMode,
     pub frames_in_flight: u32, 
-    pub extensions: &'a[Box<dyn Extension>]
+    pub extensions: &'a[&'a dyn Extension]
 }
 
 pub struct Queue(ffi::emgpu_queue);
@@ -55,7 +55,7 @@ pub struct Device {
     sys: ffi::emgpu_device,
 }
 
-trait Extension {}
+pub trait Extension {}
 
 impl Default for DeviceConfig<'_> {
     fn default() -> Self {
@@ -219,7 +219,19 @@ pub mod ext {
         pub force_format: bool,
         pub min_texture_count: u32,
         pub usage: TextureUsage,
-        pub window: &'a Window,
+        pub window: Option<&'a Window>,
+    }
+
+    impl Default for EmwinSurfaceConfig<'_> {
+        fn default() -> Self {
+            EmwinSurfaceConfig {
+                preferred_format: GpuFormat::BGR8_UNORM,
+                force_format: false,
+                min_texture_count: 3,
+                usage: TextureUsage::AttachmentDst,
+                window: None,
+            }
+        }
     }
 
     impl EmwinSurfaceExt {
@@ -258,7 +270,7 @@ pub mod ext {
                 force_format: config.force_format,
                 min_texture_count: config.min_texture_count,
                 usage: config.usage.bits(),
-                window: &config.window.sys as *const ffi::emwin_window,
+                window: &config.window.unwrap().sys as *const ffi::emwin_window,
             };
             let mut surface = Surface {
                 sys: unsafe { std::mem::zeroed() },
