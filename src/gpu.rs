@@ -129,13 +129,57 @@ impl Device {
         Ok(Queue { 0: queue.into() })
     }
 
-    pub fn submit(&mut self, command_buffer: CommandBuffer) -> Result<()> {
+    pub fn submit(&mut self, queue: Queue, command_buffer: CommandBuffer) -> Result<()> {
         todo!()
     }
 }
 
 pub struct CommandBuffer {
     sys: ffi::emgpu_command_buffer,
+}
+
+pub struct LocalResource(u32);
+
+pub struct LocalFramebuffer(u32);
+
+pub struct RenderpassColourAttachment {
+    pub
+}
+
+pub struct RenderpassConfig {
+    pub render_origin: [u64; 2],
+    pub render_size: [u64; 2],
+    pub colour_attachments: &[RenderpassColourAttachment],
+}
+
+impl CommandBuffer {
+    fn create(device: &Device) -> Result<CommandBuffer> {
+        todo!()
+    }
+
+    fn empty_resource(&mut self) -> LocalResource {
+        todo!()
+    }
+
+    fn acquire_surface(&mut self, surface: &Surface) -> LocalFramebuffer {
+        todo!()
+    }
+
+    fn begin_renderpass(&mut self, config: &RenderpassConfig) {
+        todo!()
+    }
+
+    fn set_viewport(&mut self, origin: [u64; 2], size: [u64; 2], min_depth: f32, max_depth: f32) {
+        todo!()
+    }
+
+    fn set_scissor(&mut self, origin: [u64; 2], size: [u64; 2]) {
+        todo!()
+    }
+
+    fn end_renderpass(&mut self) {
+        todo!()
+    }
 }
 
 pub struct Surface {
