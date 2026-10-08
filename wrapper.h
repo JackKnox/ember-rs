@@ -3,6 +3,8 @@
 // into this file will be processed by bindgen and inserted into the ffi crate.
 //
 
+#define EMBER_PURE_PROTOCOL
+
 // Core domain
 #include <ember/core/format.h>
 #include <ember/core/math_types.h>

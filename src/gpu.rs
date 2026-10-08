@@ -135,21 +135,119 @@ impl Device {
 }
 
 pub struct CommandBuffer {
-    sys: ffi::emgpu_command_buffer,
+    data: Vec<u8>,
+    current_resource_idx: u32,
 }
 
 pub struct LocalResource(u32);
 
 pub struct LocalFramebuffer(u32);
 
-pub struct RenderpassColourAttachment {
-    pub
+pub enum LoadOp {
+    Load, Store, DontCore
 }
 
-pub struct RenderpassConfig {
+pub enum StoreOp {
+    Store, DontCare
+}
+
+pub struct Colour(pub u32);
+
+pub struct RenderpassColourAttachment {
+    pub framebuffer: LocalFramebuffer,
+    pub load_op: LoadOp,
+    pub store_op: StoreOp,
+    pub colour: Colour,
+    pub presentable: bool
+}
+
+pub struct RenderpassConfig<'a> {
     pub render_origin: [u64; 2],
     pub render_size: [u64; 2],
-    pub colour_attachments: &[RenderpassColourAttachment],
+    pub colour_attachments: &'a[RenderpassColourAttachment],
+}
+
+#[repr(u32)]
+#[derive(Clone, Copy)]
+enum CommandType {
+    Empty = 0,
+    BeginComputePass,
+    Dispatch,
+    EndComputePass,
+    BeginRenderPass,
+    EndRenderPass,
+    SetViewport,
+    SetScissor,
+    BindRasterPipeline,
+    BindIndexBuffer,
+    Draw,
+    EmptyResource,
+    ImportTexture,
+    AcquireSurface,
+    ExportResources,
+    ImportResources,
+    ColourAttachments,
+    BindVertexBuffers,
+}
+
+#[repr(C)]
+struct CommandHeader {
+    pub cmd_type: CommandType,
+    pub cmd_size: u64
+}
+
+impl CommandHeader {
+    fn write_to(&self, dst: &mut [u8]) {
+        const SIZE: usize = 16;
+
+        assert!(dst.len() >= SIZE);
+
+        dst[0..4].copy_from_slice(&(self.cmd_type as u32).to_le_bytes());
+        dst[4..8].fill(0); // padding
+        dst[8..16].copy_from_slice(&self.cmd_size.to_le_bytes());
+    }
+}
+
+impl CommandBuffer {
+    pub fn new() -> Self {
+        Self {
+            data: Vec::with_capacity(4),
+            current_resource_idx: 0,
+        }
+    }
+
+    pub fn as_bytes(&self) -> &[u8] {
+        &self.data
+    }
+
+    fn alloc(&mut self, ty: CommandType, payload_size: usize) -> &mut [u8] {
+        let offset = align_up(self.data.len(), 16);
+        let total_size = size_of::<CommandHeader>() + payload_size;
+
+        let end = offset + total_size;
+
+        if self.data.len() < end {
+            self.data.resize(end, 0);
+        }
+
+        let header = CommandHeader {
+            cmd_type: ty,
+            cmd_size: total_size as u64,
+        };
+
+        header.write_to(&mut self.data[offset..offset + size_of::<CommandHeader>()]);
+
+        &mut self.data[
+            offset + size_of::<CommandHeader>()
+                ..offset + total_size
+        ]
+    }
+}
+
+fn align_up(value: usize, alignment: usize) -> usize {
+    debug_assert!(alignment.is_power_of_two());
+
+    (value + alignment - 1) & !(alignment - 1)
 }
 
 impl CommandBuffer {

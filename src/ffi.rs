@@ -1140,7 +1140,7 @@ pub type PFN_create_emwin_surface = ::std::option::Option<
     unsafe extern "C" fn(
         device: *mut emgpu_device,
         allocator: *mut em_allocator,
-        config: *mut emgpu_emwin_surface_config,
+        config: *const emgpu_emwin_surface_config,
         out_surface: *mut emgpu_surface,
     ) -> em_result,
 >;
