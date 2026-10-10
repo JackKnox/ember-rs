@@ -251,37 +251,47 @@ fn align_up(value: usize, alignment: usize) -> usize {
 }
 
 impl CommandBuffer {
-    fn create(device: &Device) -> Result<CommandBuffer> {
+    pub fn create(device: &Device) -> Result<CommandBuffer> {
         todo!()
     }
 
-    fn empty_resource(&mut self) -> LocalResource {
+    pub fn empty_resource(&mut self) -> LocalResource {
         todo!()
     }
 
-    fn acquire_surface(&mut self, surface: &Surface) -> LocalFramebuffer {
+    pub fn acquire_surface(&mut self, surface: &Surface) -> LocalFramebuffer {
         todo!()
     }
 
-    fn begin_renderpass(&mut self, config: &RenderpassConfig) {
+    pub fn begin_renderpass(&mut self, config: &RenderpassConfig) {
         todo!()
     }
 
-    fn set_viewport(&mut self, origin: [u64; 2], size: [u64; 2], min_depth: f32, max_depth: f32) {
+    pub fn set_viewport(&mut self, origin: [u64; 2], size: [u64; 2], min_depth: f32, max_depth: f32) {
         todo!()
     }
 
-    fn set_scissor(&mut self, origin: [u64; 2], size: [u64; 2]) {
+    pub fn set_scissor(&mut self, origin: [u64; 2], size: [u64; 2]) {
         todo!()
     }
 
-    fn end_renderpass(&mut self) {
+    pub fn end_renderpass(&mut self) {
         todo!()
     }
 }
 
 pub struct Surface {
     pub sys: ffi::emgpu_surface,
+}
+
+impl Surface {
+    pub fn resize(&mut self, device: &mut Device, new_size: [u64; 2]) -> Result<Surface> {
+        todo!()
+    }
+
+    pub fn destroy(&mut self, device: &mut Device, allocator: &Allocator) {
+        todo!()
+    }
 }
 
 pub enum FilterType {
@@ -300,7 +310,7 @@ pub enum AddressMode {
 bitflags! {
     #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
     pub struct TextureUsage: u32 {
-        const Storage       = 0b00000001;
+        const Storage       = 0b00000001;`
         const Sampled       = 0b00000010;
         const TransferSrc   = 0b00000100;
         const TransferDst   = 0b00001000;
