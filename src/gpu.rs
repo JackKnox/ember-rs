@@ -310,7 +310,7 @@ pub enum AddressMode {
 bitflags! {
     #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
     pub struct TextureUsage: u32 {
-        const Storage       = 0b00000001;`
+        const Storage       = 0b00000001;
         const Sampled       = 0b00000010;
         const TransferSrc   = 0b00000100;
         const TransferDst   = 0b00001000;
