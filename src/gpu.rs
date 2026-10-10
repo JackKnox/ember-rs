@@ -49,6 +49,7 @@ pub struct DeviceConfig<'a> {
     pub extensions: &'a[&'a dyn Extension]
 }
 
+#[derive(Clone, Copy)]
 pub struct Queue(ffi::emgpu_queue);
 
 pub struct Device {
