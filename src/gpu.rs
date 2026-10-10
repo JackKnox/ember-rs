@@ -162,8 +162,8 @@ pub struct RenderpassColourAttachment {
 }
 
 pub struct RenderpassConfig<'a> {
-    pub render_origin: [u64; 2],
-    pub render_size: [u64; 2],
+    pub render_origin: [u32; 2],
+    pub render_size: [u32; 2],
     pub colour_attachments: &'a[RenderpassColourAttachment],
 }
 
