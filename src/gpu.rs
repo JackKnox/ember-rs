@@ -153,6 +153,17 @@ pub enum StoreOp {
 
 pub struct Colour(pub u32);
 
+impl Colour {
+    pub fn rgba8(r: u8, g: u8, b: u8, a: u8) -> Self {
+        Self(
+            ((r as u32) << 24)
+                | ((g as u32) << 16)
+                | ((b as u32) << 8)
+                | (a as u32),
+        )
+    }
+}
+
 pub struct RenderpassColourAttachment {
     pub framebuffer: LocalFramebuffer,
     pub load_op: LoadOp,
@@ -267,11 +278,11 @@ impl CommandBuffer {
         todo!()
     }
 
-    pub fn set_viewport(&mut self, origin: [u64; 2], size: [u64; 2], min_depth: f32, max_depth: f32) {
+    pub fn set_viewport(&mut self, origin: [u32; 2], size: [u32; 2], min_depth: f32, max_depth: f32) {
         todo!()
     }
 
-    pub fn set_scissor(&mut self, origin: [u64; 2], size: [u64; 2]) {
+    pub fn set_scissor(&mut self, origin: [u32; 2], size: [u32; 2]) {
         todo!()
     }
 
