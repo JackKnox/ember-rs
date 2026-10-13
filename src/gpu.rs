@@ -58,6 +58,7 @@ pub struct Device {
 
 pub trait Extension {
     fn desc(&self) -> &ffi::emgpu_extension_desc;
+    fn prepare(&self);
 }
 
 impl Default for DeviceConfig<'_> {
@@ -75,9 +76,17 @@ impl Default for DeviceConfig<'_> {
 }
 
 impl Device {
-    pub fn init(allocator: &Allocator, config: &DeviceConfig) -> Result<Device> {
+    pub fn init(
+        allocator: &Allocator,
+        config: &mut DeviceConfig,
+    ) -> Result<Device> {
         let debug_name = CString::new(config.debug_name.clone())
             .expect("Device debug name contained a NULL byte");
+
+        // Refresh all extension output pointers before copying descriptors.
+        for ext in config.extensions {
+            ext.prepare();
+        }
 
         let mut raw_descs: Vec<ffi::emgpu_extension_desc> = config.extensions
             .iter()
@@ -93,21 +102,25 @@ impl Device {
             optional_modes: config.optional_modes.bits(),
             frames_in_flight: config.frames_in_flight,
             extension_count: raw_descs.len() as u32,
-            extensions: raw_descs.as_mut_ptr()
+            extensions: raw_descs.as_mut_ptr(),
         };
+
         let mut device = Device {
             sys: unsafe { std::mem::zeroed() },
         };
+
         let result = unsafe {
             ffi::emgpu_device_init(
                 allocator.sys.get() as *mut ffi::em_allocator,
                 &c_config as *const ffi::emgpu_device_config,
-                &mut device.sys as *mut ffi::emgpu_device)
+                &mut device.sys as *mut ffi::emgpu_device,
+            )
         };
 
         if result != ffi::em_result_EMBER_RESULT_OK {
             return Err(result.into());
         }
+
         Ok(device)
     }
 
@@ -367,27 +380,10 @@ impl Default for TextureConfig {
 ////////////////////////////////////////////////
 
 pub mod ext {
-    use crate::core::{Version, Allocator, Result};
+    use crate::core::{Allocator, Error, Result, Version};
     use crate::gpu::{Device, Extension, GpuFormat, Surface, TextureUsage};
     use crate::window::{Window, Desktop};
     use crate::ffi;
-
-    pub struct EmwinSurfaceExt {
-        pub sys: ffi::emgpu_extension_desc,
-        pub data: ffi::emgpu_emwin_surface_ext,
-    }
-
-    impl Extension for EmwinSurfaceExt {
-        fn desc(&self) -> &ffi::emgpu_extension_desc {
-            &self.sys
-        }
-    }
-
-    #[repr(C)]
-    struct EmwinSurfaceParams {
-        desktop: *const ffi::emwin_desktop,
-        out_extension: *mut ffi::emgpu_emwin_surface_ext,
-    }
 
     pub struct EmwinSurfaceConfig<'a> {
         pub preferred_format: GpuFormat,
@@ -409,11 +405,23 @@ pub mod ext {
         }
     }
 
+    #[repr(C)]
+    pub struct EmwinSurfaceParams {
+        pub desktop: *const ffi::emwin_desktop,
+        pub out_extension: *mut ffi::emgpu_emwin_surface_ext,
+    }
+
+    pub struct EmwinSurfaceExt {
+        pub sys: ffi::emgpu_extension_desc,
+        pub data: ffi::emgpu_emwin_surface_ext,
+        desktop: *const ffi::emwin_desktop,
+    }
+
     impl EmwinSurfaceExt {
         pub fn register(desktop: &Desktop) -> Self {
             let mut ext = Self {
                 sys: ffi::emgpu_extension_desc {
-                    name: c"EMGPU_EXT_emwin_surface".as_ptr(),
+                    name: b"EMGPU_EXT_emwin_surface\0".as_ptr() as *const i8,
                     version: Version::ember_rs().into(),
                     optional: false,
                     user_data: ffi::emgpu_extension_user_data {
@@ -421,53 +429,81 @@ pub mod ext {
                     },
                 },
                 data: unsafe { std::mem::zeroed() },
-            };
-
-            let params = EmwinSurfaceParams {
                 desktop: desktop.sys as *const ffi::emwin_desktop,
-                out_extension: &mut ext.data as *mut ffi::emgpu_emwin_surface_ext,
             };
 
-            assert!(
-                std::mem::size_of::<EmwinSurfaceParams>() <= 16,
-                "EmwinSurfaceParams exceeds extension user_data capacity"
-            );
-
-            unsafe {
-                std::ptr::copy_nonoverlapping(
-                    &params as *const _ as *const u8,
-                    ext.sys.user_data.bytes.as_mut_ptr(),
-                    std::mem::size_of::<EmwinSurfaceParams>(),
-                );
-            }
-
+            ext.prepare();
             ext
         }
 
-        pub fn create_surface(&self, device: &mut Device, allocator: &Allocator, config: &EmwinSurfaceConfig) -> Result<Surface> {
+        fn write_params(&self) {
+            let params = EmwinSurfaceParams {
+                desktop: self.desktop,
+                out_extension: &self.data as *const _ as *mut _,
+            };
+
+            assert_eq!(std::mem::size_of::<EmwinSurfaceParams>(), 16);
+
+            unsafe {
+                std::ptr::copy_nonoverlapping(
+                    &params as *const EmwinSurfaceParams as *const u8,
+                    self.sys.user_data.bytes.as_ptr() as *mut u8,
+                    std::mem::size_of::<EmwinSurfaceParams>(),
+                );
+            }
+        }
+
+        pub fn create_surface(
+            &self,
+            device: &mut Device,
+            allocator: &Allocator,
+            config: &EmwinSurfaceConfig,
+        ) -> Result<Surface> {
+            let create_surface = self.data.create_surface.ok_or_else(|| {
+                Error::UnavailableAPI
+            })?;
+
+            let window = config.window.as_ref().ok_or_else(|| {
+                // Replace with your crate's actual missing-window error.
+                Error::InvalidValue
+            })?;
+
             let mut c_config = ffi::emgpu_emwin_surface_config {
                 preferred_format: config.preferred_format.0.0,
                 force_format: config.force_format,
                 min_texture_count: config.min_texture_count,
                 usage: config.usage.bits(),
-                window: &config.window.unwrap().sys as *const ffi::emwin_window,
+                window: &window.sys as *const ffi::emwin_window,
             };
+
             let mut surface = Surface {
                 sys: unsafe { std::mem::zeroed() },
             };
 
             let result = unsafe {
-                (self.data.create_surface.unwrap())(
-                    &mut device.sys as *mut ffi::emgpu_device,
+                create_surface(
+                    &mut device.sys,
                     allocator.sys.get() as *mut ffi::em_allocator,
-                    &mut c_config as *mut ffi::emgpu_emwin_surface_config,
-                    &mut surface.sys as *mut ffi::emgpu_surface) 
+                    &mut c_config,
+                    &mut surface.sys,
+                )
             };
-            
+
             if result != ffi::em_result_EMBER_RESULT_OK {
                 return Err(result.into());
             }
+
             Ok(surface)
+        }
+    }
+
+    impl Extension for EmwinSurfaceExt {
+        fn desc(&self) -> &ffi::emgpu_extension_desc {
+            &self.sys
+        }
+
+        fn prepare(&self) {
+            self.write_params();
         }
     }
 }
