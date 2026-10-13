@@ -413,7 +413,7 @@ pub mod ext {
         pub fn register(desktop: &Desktop) -> Self {
             let mut ext = Self {
                 sys: ffi::emgpu_extension_desc {
-                    name: b"EMGPU_EXT_emwin_surface\0".as_ptr() as *const i8,
+                    name: c"EMGPU_EXT_emwin_surface".as_ptr(),
                     version: Version::ember_rs().into(),
                     optional: false,
                     user_data: ffi::emgpu_extension_user_data {
@@ -427,6 +427,11 @@ pub mod ext {
                 desktop: desktop.sys as *const ffi::emwin_desktop,
                 out_extension: &mut ext.data as *mut ffi::emgpu_emwin_surface_ext,
             };
+
+            assert!(
+                std::mem::size_of::<EmwinSurfaceParams>() <= 16,
+                "EmwinSurfaceParams exceeds extension user_data capacity"
+            );
 
             unsafe {
                 std::ptr::copy_nonoverlapping(
