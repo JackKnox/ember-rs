@@ -56,7 +56,9 @@ pub struct Device {
     sys: ffi::emgpu_device,
 }
 
-pub trait Extension {}
+pub trait Extension {
+    fn desc(&self) -> &ffi::emgpu_extension_desc;
+}
 
 impl Default for DeviceConfig<'_> {
     fn default() -> Self {
@@ -77,6 +79,11 @@ impl Device {
         let debug_name = CString::new(config.debug_name.clone())
             .expect("Device debug name contained a NULL byte");
 
+        let mut raw_descs: Vec<ffi::emgpu_extension_desc> = config.extensions
+            .iter()
+            .map(|ext| *ext.desc())
+            .collect();
+
         let c_config = ffi::emgpu_device_config {
             api_next: std::ptr::null_mut(),
             debug_name: debug_name.as_ptr(),
@@ -85,8 +92,8 @@ impl Device {
             required_modes: config.required_modes.bits(),
             optional_modes: config.optional_modes.bits(),
             frames_in_flight: config.frames_in_flight,
-            extension_count: 0,
-            extensions: std::ptr::null_mut(),
+            extension_count: raw_descs.len() as u32,
+            extensions: raw_descs.as_mut_ptr()
         };
         let mut device = Device {
             sys: unsafe { std::mem::zeroed() },
@@ -370,7 +377,11 @@ pub mod ext {
         pub data: ffi::emgpu_emwin_surface_ext,
     }
 
-    impl Extension for EmwinSurfaceExt {}
+    impl Extension for EmwinSurfaceExt {
+        fn desc(&self) -> &ffi::emgpu_extension_desc {
+            &self.sys
+        }
+    }
 
     #[repr(C)]
     struct EmwinSurfaceParams {
