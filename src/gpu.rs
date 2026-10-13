@@ -78,7 +78,7 @@ impl Default for DeviceConfig<'_> {
 impl Device {
     pub fn init(
         allocator: &Allocator,
-        config: &mut DeviceConfig,
+        config: &DeviceConfig,
     ) -> Result<Device> {
         let debug_name = CString::new(config.debug_name.clone())
             .expect("Device debug name contained a NULL byte");
