@@ -167,23 +167,17 @@ impl Device {
     }
 }
 
-pub struct CommandBuffer {
-    data: Vec<u8>,
-    current_resource_idx: u32,
-}
-
-pub struct LocalResource(u32);
-
-pub struct LocalFramebuffer(u32);
-
+#[derive(Clone, Copy)]
 pub enum LoadOp {
     Load, Store, DontCore
 }
 
+#[derive(Clone, Copy)]
 pub enum StoreOp {
     Store, DontCare
 }
 
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub struct Colour(pub u32);
 
 impl Colour {
@@ -195,6 +189,22 @@ impl Colour {
                 | (a as u32),
         )
     }
+
+    pub fn r(self) -> u8 {
+        (self.0 >> 24) as u8
+    }
+
+    pub fn g(self) -> u8 {
+        (self.0 >> 16) as u8
+    }
+
+    pub fn b(self) -> u8 {
+        (self.0 >> 8) as u8
+    }
+
+    pub fn a(self) -> u8 {
+        self.0 as u8
+    }
 }
 
 pub struct RenderpassColourAttachment {
@@ -203,12 +213,6 @@ pub struct RenderpassColourAttachment {
     pub store_op: StoreOp,
     pub colour: Colour,
     pub presentable: bool
-}
-
-pub struct RenderpassConfig<'a> {
-    pub render_origin: [u32; 2],
-    pub render_size: [u32; 2],
-    pub colour_attachments: &'a[RenderpassColourAttachment],
 }
 
 #[repr(u32)]
@@ -233,94 +237,291 @@ enum CommandType {
     ColourAttachments,
     BindVertexBuffers,
 }
-
+ 
 #[repr(C)]
 struct CommandHeader {
     pub cmd_type: CommandType,
-    pub cmd_size: u64
+    pub cmd_size: u64,
 }
-
+ 
+const HEADER_SIZE: usize = 16;
+const _: () = assert!(size_of::<CommandHeader>() == HEADER_SIZE);
+ 
 impl CommandHeader {
     fn write_to(&self, dst: &mut [u8]) {
-        const SIZE: usize = 16;
-
-        assert!(dst.len() >= SIZE);
-
+        assert!(dst.len() >= HEADER_SIZE);
+ 
         dst[0..4].copy_from_slice(&(self.cmd_type as u32).to_le_bytes());
         dst[4..8].fill(0); // padding
         dst[8..16].copy_from_slice(&self.cmd_size.to_le_bytes());
     }
 }
+ 
+fn align_up(value: usize, alignment: usize) -> usize {
+    debug_assert!(alignment.is_power_of_two());
+ 
+    (value + alignment - 1) & !(alignment - 1)
+}
+ 
+// ---- Public handle / config types --------------------------------------------
+ 
+#[derive(Clone, Copy)]
+pub struct LocalResource(pub u32);
+ 
+#[derive(Clone, Copy)]
+pub struct LocalFramebuffer(pub u32);
+ 
+pub struct RenderpassConfig<'a> {
+    pub render_origin: [u32; 2],
+    pub render_size: [u32; 2],
+    pub colour_attachments: &'a [RenderpassColourAttachment],
+}
 
+impl Encode for RenderpassColourAttachment {
+    const SIZE: usize = 32; // must equal sizeof(emgpu_colour_attachment)
+
+    fn encode(&self, w: &mut Writer<'_>) {
+        w.u32(self.framebuffer.0)
+            .u32(self.load_op as u32)
+            .u32(self.store_op as u32)
+            .u8(self.colour.r())
+            .u8(self.colour.g())
+            .u8(self.colour.b())
+            .u8(self.colour.a())
+            .u8(self.presentable as u8)
+            .pad(3); // tail padding
+    }
+}
+
+/*
+pub struct ComputepassConfig<'a> {
+    pub pipeline: &'a Pipeline,
+    pub import_resources: &'a [ResourceImport],
+    pub export_resources: &'a [ResourceExport],
+}
+ 
+pub struct RasterBindInfo<'a> {
+    pub pipeline: &'a Pipeline,
+    pub import_resources: &'a [ResourceImport],
+    pub export_resources: &'a [ResourceExport],
+}
+*/
+ 
+// ---- Tiny little-endian payload writer ---------------------------------------
+ 
+struct Writer<'a> {
+    buf: &'a mut [u8],
+    pos: usize,
+}
+ 
+impl Writer<'_> {
+    fn u8(&mut self, v: u8) -> &mut Self {
+        self.buf[self.pos] = v;
+        self.pos += 1;
+        self
+    }
+
+    fn u32(&mut self, v: u32) -> &mut Self {
+        self.buf[self.pos..self.pos + 4].copy_from_slice(&v.to_le_bytes());
+        self.pos += 4;
+        self
+    }
+ 
+    fn u64(&mut self, v: u64) -> &mut Self {
+        self.buf[self.pos..self.pos + 8].copy_from_slice(&v.to_le_bytes());
+        self.pos += 8;
+        self
+    }
+ 
+    fn f32(&mut self, v: f32) -> &mut Self {
+        self.buf[self.pos..self.pos + 4].copy_from_slice(&v.to_le_bytes());
+        self.pos += 4;
+        self
+    }
+ 
+    fn uvec2(&mut self, v: [u32; 2]) -> &mut Self {
+        self.u32(v[0]).u32(v[1])
+    }
+ 
+    fn uvec3(&mut self, v: [u32; 3]) -> &mut Self {
+        self.u32(v[0]).u32(v[1]).u32(v[2])
+    }
+ 
+    /// Struct tail padding (bytes are already zeroed by `alloc`).
+    fn pad(&mut self, n: usize) -> &mut Self {
+        self.pos += n;
+        self
+    }
+}
+ 
+/// Pointer stored as raw bits, matching the C union layout.
+/// The consumer assumes the referent outlives submission.
+fn ptr_bits<T>(r: &T) -> u64 {
+    r as *const T as usize as u64
+}
+ 
+// ---- CommandBuffer -----------------------------------------------------------
+ 
+pub struct CommandBuffer {
+    data: Vec<u8>,
+    current_resource_idx: u32,
+}
+
+trait Encode {
+    const SIZE: usize;
+    fn encode(&self, w: &mut Writer<'_>);
+}
+ 
 impl CommandBuffer {
-    pub fn new() -> Self {
-        Self {
+    pub fn create(_device: &Device) -> Result<CommandBuffer> {
+        Ok(Self {
             data: Vec::with_capacity(4),
             current_resource_idx: 0,
-        }
+        })
     }
-
-    pub fn as_bytes(&self) -> &[u8] {
-        &self.data
-    }
-
+ 
+    /// Reserve a header + `payload_size` bytes (16-byte aligned) and return the payload slice.
     fn alloc(&mut self, ty: CommandType, payload_size: usize) -> &mut [u8] {
         let offset = align_up(self.data.len(), 16);
-        let total_size = size_of::<CommandHeader>() + payload_size;
-
+        let total_size = HEADER_SIZE + payload_size;
         let end = offset + total_size;
-
-        if self.data.len() < end {
-            self.data.resize(end, 0);
-        }
-
+ 
+        // `end` is always > len, so this always grows. New bytes (including any
+        // alignment gap before `offset`) are zeroed.
+        self.data.resize(end, 0);
+ 
         let header = CommandHeader {
             cmd_type: ty,
             cmd_size: total_size as u64,
         };
-
-        header.write_to(&mut self.data[offset..offset + size_of::<CommandHeader>()]);
-
-        &mut self.data[
-            offset + size_of::<CommandHeader>()
-                ..offset + total_size
-        ]
+        header.write_to(&mut self.data[offset..offset + HEADER_SIZE]);
+ 
+        &mut self.data[offset + HEADER_SIZE..end]
     }
-}
-
-fn align_up(value: usize, alignment: usize) -> usize {
-    debug_assert!(alignment.is_power_of_two());
-
-    (value + alignment - 1) & !(alignment - 1)
-}
-
-impl CommandBuffer {
-    pub fn create(device: &Device) -> Result<CommandBuffer> {
-        todo!()
+ 
+    /// Allocate a fixed-size payload (N bytes) and fill it via `f`.
+    fn push<const N: usize>(&mut self, ty: CommandType, f: impl FnOnce(&mut Writer<'_>)) {
+        let mut w = Writer { buf: self.alloc(ty, N), pos: 0 };
+        f(&mut w);
+        debug_assert_eq!(w.pos, N, "payload layout mismatch for command {}", ty as u32);
+    }
+ 
+    /// Allocate an array payload and copy the elements in verbatim.
+    fn push_array<T: bytemuck::NoUninit>(&mut self, ty: CommandType, items: &[T]) {
+        let bytes: &[u8] = bytemuck::cast_slice(items);
+        self.alloc(ty, bytes.len()).copy_from_slice(bytes);
     }
 
+    fn push_encoded<T: Encode>(&mut self, ty: CommandType, items: &[T]) {
+        let mut w = Writer { buf: self.alloc(ty, T::SIZE * items.len()), pos: 0 };
+        for item in items {
+            item.encode(&mut w);
+        }
+        debug_assert_eq!(w.pos, T::SIZE * items.len(), "layout mismatch for command {}", ty as u32);
+    }
+ 
+    fn next_resource_idx(&mut self) -> u32 {
+        let idx = self.current_resource_idx;
+        self.current_resource_idx += 1;
+        idx
+    }
+ 
+    // ---- resources ----
+ 
     pub fn empty_resource(&mut self) -> LocalResource {
-        todo!()
+        let id = self.next_resource_idx();
+        self.push::<4>(CommandType::EmptyResource, |w| {
+            w.u32(id);
+        });
+        LocalResource(id)
     }
-
+ 
+    pub fn import_texture(&mut self, texture: &Texture) -> LocalFramebuffer {
+        let id = self.next_resource_idx();
+        self.push::<16>(CommandType::ImportTexture, |w| {
+            w.u64(ptr_bits(texture)).u32(id).pad(4); // C struct is 16 bytes (tail padding)
+        });
+        LocalFramebuffer(id)
+    }
+ 
     pub fn acquire_surface(&mut self, surface: &Surface) -> LocalFramebuffer {
-        todo!()
+        let id = self.next_resource_idx();
+        self.push::<16>(CommandType::AcquireSurface, |w| {
+            w.u64(ptr_bits(surface)).u32(id).pad(4);
+        });
+        LocalFramebuffer(id)
     }
-
+ 
+    // ---- compute ----
+/*
+    pub fn begin_computepass(&mut self, config: &ComputepassConfig) {
+        self.push::<8>(CommandType::BeginComputePass, |w| {
+            w.u64(ptr_bits(config.pipeline));
+        });
+        self.push_array(CommandType::ImportResources, config.import_resources);
+        self.push_array(CommandType::ExportResources, config.export_resources);
+    }
+*/
+    pub fn dispatch(&mut self, group_size: [u32; 3]) {
+        self.push::<12>(CommandType::Dispatch, |w| {
+            w.uvec3(group_size);
+        });
+    }
+ 
+    pub fn end_computepass(&mut self) {
+        self.alloc(CommandType::EndComputePass, 0);
+    }
+ 
+    // ---- graphics ----
+ 
     pub fn begin_renderpass(&mut self, config: &RenderpassConfig) {
-        todo!()
+        self.push::<16>(CommandType::BeginRenderPass, |w| {
+            w.uvec2(config.render_origin).uvec2(config.render_size);
+        });
+        self.push_encoded(CommandType::ColourAttachments, config.colour_attachments);
     }
-
-    pub fn set_viewport(&mut self, origin: [u32; 2], size: [u32; 2], min_depth: f32, max_depth: f32) {
-        todo!()
-    }
-
-    pub fn set_scissor(&mut self, origin: [u32; 2], size: [u32; 2]) {
-        todo!()
-    }
-
+ 
     pub fn end_renderpass(&mut self) {
-        todo!()
+        self.alloc(CommandType::EndRenderPass, 0);
+    }
+ 
+    pub fn set_viewport(&mut self, origin: [u32; 2], size: [u32; 2], min_depth: f32, max_depth: f32) {
+        self.push::<24>(CommandType::SetViewport, |w| {
+            w.uvec2(origin).uvec2(size).f32(min_depth).f32(max_depth);
+        });
+    }
+ 
+    pub fn set_scissor(&mut self, origin: [u32; 2], size: [u32; 2]) {
+        self.push::<16>(CommandType::SetScissor, |w| {
+            w.uvec2(origin).uvec2(size);
+        });
+    }
+ 
+    // ---- raster ----
+/*
+    pub fn bind_raster_pipeline(&mut self, info: &RasterBindInfo) {
+        self.push::<8>(CommandType::BindRasterPipeline, |w| {
+            w.u64(ptr_bits(info.pipeline));
+        });
+        self.push_array(CommandType::ImportResources, info.import_resources);
+        self.push_array(CommandType::ExportResources, info.export_resources);
+    }
+ 
+    pub fn bind_vertex_buffers(&mut self, vertex_buffers: &[Buffer]) {
+        // Buffer must be a NoUninit handle type, same as the C memcpy of emgpu_buffer.
+        self.push_array(CommandType::BindVertexBuffers, vertex_buffers);
+    }
+ 
+    pub fn bind_index_buffer(&mut self, index_buffer: &Buffer) {
+        self.push::<8>(CommandType::BindIndexBuffer, |w| {
+            w.u64(ptr_bits(index_buffer));
+        });
+    }
+*/
+    pub fn draw(&mut self, vertex_count: u32, instance_count: u32) {
+        self.push::<8>(CommandType::Draw, |w| {
+            w.u32(vertex_count).u32(instance_count);
+        });
     }
 }
 

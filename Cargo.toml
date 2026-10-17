@@ -10,6 +10,7 @@ repository = "https://github.com/JackKnox/ember-rs"
 
 [dependencies]
 bitflags = "2.13.2"
+bytemuck = { version = "1.25.2", features = ["derive"] }
 log = "0.4.33"
 
 [build-dependencies]
