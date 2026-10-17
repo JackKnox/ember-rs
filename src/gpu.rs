@@ -278,7 +278,7 @@ pub struct RenderpassConfig<'a> {
 }
 
 impl Encode for RenderpassColourAttachment {
-    const SIZE: usize = 32; // must equal sizeof(emgpu_colour_attachment)
+    const SIZE: usize = 20; // must equal sizeof(emgpu_colour_attachment)
 
     fn encode(&self, w: &mut Writer<'_>) {
         w.u32(self.framebuffer.0)
