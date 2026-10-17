@@ -151,7 +151,19 @@ impl Device {
     }
 
     pub fn submit(&mut self, queue: Queue, command_buffer: CommandBuffer) -> Result<()> {
-        todo!()
+        let result = unsafe {
+            ffi::emgpu_device_submit_raw(
+                &mut self.sys as *mut ffi::emgpu_device, 
+                queue.0 as ffi::emgpu_queue, 
+                command_buffer.data.as_ptr() as *const std::ffi::c_void,
+                command_buffer.data.len() as u64,
+                command_buffer.current_resource_idx) };
+
+        if result != ffi::em_result_EMBER_RESULT_OK {
+            return Err(result.into());
+        }
+
+        Ok(())
     }
 }
 

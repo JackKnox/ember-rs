@@ -7,7 +7,6 @@ pub const EMBER_FORMAT_FLAG_BGRA: u32 = 2;
 pub const EMBER_FORMAT_FLAG_SRGB: u32 = 4;
 pub const EMBER_FORMAT_FLAG_DEPTH: u32 = 8;
 pub const EMBER_FORMAT_FLAG_STENCIL: u32 = 16;
-pub const EMGPU_FORMAT_UNDEFINED: u32 = 0;
 pub const EMWIN_FORMAT_UNDEFINED: u32 = 0;
 pub type u8_ = ::std::os::raw::c_uchar;
 pub type u32_ = ::std::os::raw::c_uint;
@@ -100,21 +99,6 @@ const _: () = {
     ["Alignment of uvec2"][::std::mem::align_of::<uvec2>() - 4usize];
     ["Offset of field: uvec2::x"][::std::mem::offset_of!(uvec2, x) - 0usize];
     ["Offset of field: uvec2::y"][::std::mem::offset_of!(uvec2, y) - 4usize];
-};
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct uvec3 {
-    pub x: u32_,
-    pub y: u32_,
-    pub z: u32_,
-}
-#[allow(clippy::unnecessary_operation, clippy::identity_op)]
-const _: () = {
-    ["Size of uvec3"][::std::mem::size_of::<uvec3>() - 12usize];
-    ["Alignment of uvec3"][::std::mem::align_of::<uvec3>() - 4usize];
-    ["Offset of field: uvec3::x"][::std::mem::offset_of!(uvec3, x) - 0usize];
-    ["Offset of field: uvec3::y"][::std::mem::offset_of!(uvec3, y) - 4usize];
-    ["Offset of field: uvec3::z"][::std::mem::offset_of!(uvec3, z) - 8usize];
 };
 #[doc = "< Operation completed successfully"]
 pub const em_result_EMBER_RESULT_OK: em_result = 0;
@@ -654,58 +638,15 @@ unsafe extern "C" {
 pub type emgpu_local_resource = u32_;
 #[doc = " @brief Framebuffer handle local to a single GPU command buffer.\n\n This identifier representes any texture that is correctly controlled to\n allow rendering directly to it through a renderpass. This allows that is only guaranteed\n to be valid during the lifetime of the relevent command buffer. This ensures\n syncronization and lifetime guarantees."]
 pub type emgpu_local_framebuffer = u32_;
-#[doc = " @brief Represents a linear sequance of commands relevent to the current GPU device.\n\n An emgpu_commandbuffer acts as a transient container for all GPU commands\n required to render or dispatch work for a single frame. It provides\n a linear command recording model and manages frame-local resources."]
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct emgpu_command_buffer {
-    #[doc = " @brief Indicates whether the frame was successfully initialized."]
-    pub initialized: b8,
-    #[doc = " @brief Index used for allocating frame-local resources."]
-    pub current_resource_idx: u32_,
-    #[doc = " @brief A reference to the allocator used to manage command buffer memory."]
-    pub allocator: *mut em_allocator,
-    #[doc = " @brief Linear command buffer storing recorded GPU commands.\n\n Commands are appended during frame recording and later consumed\n during submission."]
-    pub commands_buf: *mut ::std::os::raw::c_void,
-    pub buffer_size: u64_,
-    pub buffer_capacity: u64_,
-}
-#[allow(clippy::unnecessary_operation, clippy::identity_op)]
-const _: () = {
-    ["Size of emgpu_command_buffer"][::std::mem::size_of::<emgpu_command_buffer>() - 40usize];
-    ["Alignment of emgpu_command_buffer"][::std::mem::align_of::<emgpu_command_buffer>() - 8usize];
-    ["Offset of field: emgpu_command_buffer::initialized"]
-        [::std::mem::offset_of!(emgpu_command_buffer, initialized) - 0usize];
-    ["Offset of field: emgpu_command_buffer::current_resource_idx"]
-        [::std::mem::offset_of!(emgpu_command_buffer, current_resource_idx) - 4usize];
-    ["Offset of field: emgpu_command_buffer::allocator"]
-        [::std::mem::offset_of!(emgpu_command_buffer, allocator) - 8usize];
-    ["Offset of field: emgpu_command_buffer::commands_buf"]
-        [::std::mem::offset_of!(emgpu_command_buffer, commands_buf) - 16usize];
-    ["Offset of field: emgpu_command_buffer::buffer_size"]
-        [::std::mem::offset_of!(emgpu_command_buffer, buffer_size) - 24usize];
-    ["Offset of field: emgpu_command_buffer::buffer_capacity"]
-        [::std::mem::offset_of!(emgpu_command_buffer, buffer_capacity) - 32usize];
-};
 unsafe extern "C" {
-    #[doc = " @brief Submits a command buffer for GPU execution.\n\n @param device Pointer to the device instance.\n @param queue Queue of execution to submit command buffer.\n @param command_buf Pointer to command buffer.\n @return Ember result code; returns `EMBER_RESULT_OK` if succeds."]
-    pub fn emgpu_device_submit(
+    #[doc = " @brief Submits a unmarked Ember GPU command buffer for GPU execution.\n Not recommended for direct use.\n\n @param device Pointer to the device instance.\n @param queue Queue of execution to submit command buffer.\n @param command_buf Raw pointer to command buffer.\n @param buffer_size Size in bytes of raw command buffer.\n @param resource_count Number of virtual resources allocated in command buffer, passing benifits performance.\n @return Ember result code; returns `EMBER_RESULT_OK` if succeds.\n\n @note The memory buffer given must be 16-byte aligned and must match edianness of the Drvier"]
+    pub fn emgpu_device_submit_raw(
         device: *mut emgpu_device,
         queue: emgpu_queue,
-        command_buf: *const emgpu_command_buffer,
+        command_buf: *const ::std::os::raw::c_void,
+        buffer_size: u64_,
+        resource_count: u32_,
     ) -> em_result;
-}
-unsafe extern "C" {
-    #[doc = " @brief Initializes a GPU command buffer for recording.\n\n @param device Pointer to the device instance.\n @param out_command_buffer Pointer to the buffer to initialize.\n\n @return Ember result code; `EMBER_RESULT_OK` if succeds."]
-    pub fn emgpu_command_buffer_create(
-        device: *mut emgpu_device,
-        out_command_buffer: *mut emgpu_command_buffer,
-    ) -> em_result;
-}
-unsafe extern "C" {
-    #[doc = " @brief Reserves a slot for a local resource.\n\n @param commands_buf Pointer to the command buffer.\n @return Empty resource handle."]
-    pub fn emgpu_cmd_empty_resource(
-        command_buf: *mut emgpu_command_buffer,
-    ) -> emgpu_local_framebuffer;
 }
 #[doc = " @brief Backend-agnostic GPU surface objects.\n\n Represents a backend-agnsotic object that connectes a platform surface."]
 #[repr(C)]
@@ -745,13 +686,6 @@ unsafe extern "C" {
         allocator: *mut em_allocator,
         surface: *mut emgpu_surface,
     );
-}
-unsafe extern "C" {
-    #[doc = " @brief Acquires the next available surface texture for rendering.\n\n Enqueues a presentation acquisition operation and returns a local\n reference to the acquired surface texture.\n\n @param command_buf Pointer to the command buffer.\n @param surface Surface to acquire the next presentation image from.\n\n @return A local framebuffer handle valid for the duration of the command buffer recording."]
-    pub fn emgpu_cmd_acquire_surface(
-        command_buf: *mut emgpu_command_buffer,
-        surface: *mut emgpu_surface,
-    ) -> emgpu_local_framebuffer;
 }
 pub type emwin_window_id = u64_;
 pub type emwin_monitor_id = u64_;
@@ -1320,13 +1254,6 @@ unsafe extern "C" {
         texture: *mut emgpu_texture,
     );
 }
-unsafe extern "C" {
-    #[doc = " @brief Imports a persistent texture into the command buffer.\n\n Registers an external GPU texture for use within the command buffer\n and returns a valid framebuffer handle to it.\n\n @param command_buf Pointer to the command buffer.\n @param texture Pointer to the GPU texture to import.\n\n @return A local framebuffer handle."]
-    pub fn emgpu_cmd_import_texture(
-        command_buf: *mut emgpu_command_buffer,
-        texture: *mut emgpu_texture,
-    ) -> emgpu_local_framebuffer;
-}
 #[doc = " @brief Describes a single descriptor update for a pipeline.\n\n This structure is used to update a single descriptor bindings within a\n emgpu_pipeline. The descriptor type determines which union member\n is expected to be valid.\n\n @note Only one union member must be set, according to the value of @ref type."]
 #[repr(C)]
 #[derive(Copy, Clone)]
@@ -1521,21 +1448,6 @@ unsafe extern "C" {
         out_compute_pipeline: *mut emgpu_pipeline,
     ) -> em_result;
 }
-unsafe extern "C" {
-    #[doc = " @brief Begins a compute pass.\n\n @param command_buf Pointer to the command buffer.\n @param config Compute pass configuration."]
-    pub fn emgpu_cmd_begin_computepass(
-        command_buf: *mut emgpu_command_buffer,
-        config: *const emgpu_computepass_config,
-    );
-}
-unsafe extern "C" {
-    #[doc = " @brief Dispatches a compute workload.\n\n @param command_buf Pointer to the command buffer.\n @param group_size Number of compute workgroups in XYZ dimensions."]
-    pub fn emgpu_cmd_dispatch(command_buf: *mut emgpu_command_buffer, group_size: uvec3);
-}
-unsafe extern "C" {
-    #[doc = " @brief Ends current compute pass.\n\n @param command_buf Pointer to the command buffer."]
-    pub fn emgpu_cmd_end_computepass(command_buf: *mut emgpu_command_buffer);
-}
 #[doc = " @brief Describes a single render pass attachment."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -1594,35 +1506,6 @@ const _: () = {
     ["Offset of field: emgpu_renderpass_config::colour_attachment_count"]
         [::std::mem::offset_of!(emgpu_renderpass_config, colour_attachment_count) - 24usize];
 };
-unsafe extern "C" {
-    #[doc = " @brief Begins a renderpass within the given command buffer.\n\n @param command_buf Pointer to the command buffer.\n @param config Renderpass configuration."]
-    pub fn emgpu_cmd_begin_renderpass(
-        command_buf: *mut emgpu_command_buffer,
-        config: *const emgpu_renderpass_config,
-    );
-}
-unsafe extern "C" {
-    #[doc = " @brief Ends the currently active render pass.\n\n @param command_buf Pointer to the command buffer."]
-    pub fn emgpu_cmd_end_renderpass(command_buf: *mut emgpu_command_buffer);
-}
-unsafe extern "C" {
-    #[doc = " @brief Sets the viewport for subsequent rendering commands.\n\n Defines the viewport used by following graphics commands.\n This does not affect compute operations.\n\n @param command_buf Pointer to the command buffer.\n @param origin Top-left coordinate of the viewport.\n @param size Dimensions of the viewport.\n @param min_depth Mask for minimum depth displayed by the GPU.\n @param max_depth Mask for maximum depth displayed by the GPU."]
-    pub fn emgpu_cmd_set_viewport(
-        command_buf: *mut emgpu_command_buffer,
-        origin: uvec2,
-        size: uvec2,
-        min_depth: f32_,
-        max_depth: f32_,
-    );
-}
-unsafe extern "C" {
-    #[doc = " @brief Set the scissor for subsequent rendering commands.\n\n Defines the scissor used by following graphics commands.\n This does not affect compute operations.\n\n @param command_buf Pointer to the command buffer.\n @param origin Top-left coordinate of the scissor.\n @param size Dimensions of the scissor."]
-    pub fn emgpu_cmd_set_scissor(
-        command_buf: *mut emgpu_command_buffer,
-        origin: uvec2,
-        size: uvec2,
-    );
-}
 #[doc = " @brief Configures depth and stencil testing for a raster pipeline."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -1835,36 +1718,6 @@ unsafe extern "C" {
         config: *const emgpu_raster_pipeline_config,
         out_pipeline: *mut emgpu_pipeline,
     ) -> em_result;
-}
-unsafe extern "C" {
-    #[doc = " @brief Binds a raster pipeline.\n\n @param command_buf Pointer to the command buffer.\n @param pipeline Pipeline to bind."]
-    pub fn emgpu_cmd_bind_raster_pipeline(
-        command_buf: *mut emgpu_command_buffer,
-        bind_info: *mut emgpu_raster_bind_info,
-    );
-}
-unsafe extern "C" {
-    #[doc = " @brief Binds vertex buffers to current raster pipeline.\n\n @param command_buf Pointer to the command buffer;\n @param vertex_buffer_count Number of vertex buffers.\n @param vertex_buffer Vertex buffers."]
-    pub fn emgpu_cmd_bind_vertex_buffers(
-        command_buf: *mut emgpu_command_buffer,
-        vertex_buffer_count: u32_,
-        vertex_buffers: *mut emgpu_buffer,
-    );
-}
-unsafe extern "C" {
-    #[doc = " @brief Binds index buffer to current raster pipeline.\n\n @param command_buf Pointer to the command buffer.\n @param indx_biffer Index buffer to bind."]
-    pub fn emgpu_cmd_bind_index_buffer(
-        command_buf: *mut emgpu_command_buffer,
-        index_buffer: *mut emgpu_buffer,
-    );
-}
-unsafe extern "C" {
-    #[doc = " @brief Issues a draw call.\n\n @param command_buf Pointer to the command buffer.\n @param vertex_count Number of vertices to draw.\n @param instance_count Number of instances to draw.\n\n @note Whetever a index buffer was bound\n       indicates whetever its a indexed call."]
-    pub fn emgpu_cmd_draw(
-        command_buf: *mut emgpu_command_buffer,
-        vertex_count: u32_,
-        instance_count: u32_,
-    );
 }
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
